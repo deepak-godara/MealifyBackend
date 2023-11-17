@@ -10,15 +10,20 @@ exports.postLogin = (req, res, next) => {
     UserName: username,
     Password: password,
     Email: email,
+    PhoneNo:0,
+    Gneder:"None",
+    DOB:"None",
     Address: [],
     CurrentActiveAddress: {
       longitude: 0.0,
       latitude: 0.0,
-      TypeOfAddress: "Empty",
-      FlatNo: "Empty",
+      Address: "Empty",
+      Type:"Home",
+      AddressLine1:"",
+      AddressLine2:"",
     },
   });
-  clientLogin.findOne({ Email: email, MobileNo: 0 }).then((user) => {
+  clientLogin.findOne({ Email: email}).then((user) => {
     if (user) {
       res.json({ status: "202", message: "UserName already in use" });
     } else {
@@ -28,8 +33,11 @@ exports.postLogin = (req, res, next) => {
           const newCart = new Cart({
             UserId: result._id,
             Items: [],
-            Cost: 0,
-            Quantity: 0,
+            SubTotal: 0,
+            GST:0,
+            Delivery:0,
+            Total: 0,
+            Quantity:0,
           });
           newCart
             .save()

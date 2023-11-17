@@ -25,11 +25,9 @@ const CartSchema = new Schema({
   },
   HotelName: {
     type: String,
-    required: true,
   },
   HotelId: {
     type: String,
-    required: true,
   },
   // HotelAddress: {
   //   type: String,

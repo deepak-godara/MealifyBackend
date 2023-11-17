@@ -16,7 +16,11 @@ const AddressesSchema = new Schema({
     type: Mongoose.Schema.Types.Decimal128,
     required: true,
   },
-  TypeOfAddress: {
+  Address: {
+    type: String,
+    required: true,
+  },
+  Type: {
     type: String,
     required: true,
   },
@@ -46,30 +50,49 @@ const ClientSchema = new Schema({
     type: Number,
   },
   DOB: {
-    type: Date,
+    type: String,
   },
   Gender: {
     type: String,
   },
+  Address: [AddressesSchema],
   CurrentActiveAddress: {
     AddressesSchema,
   },
   Orders: [OrderdSchema],
 });
 ClientSchema.methods.AddOrder = async function (OrderNumber) {
-    this.Orders.Push({ OrderNumber: OrderNumber });
-    this.save();
-  };
-  ClientSchema.methods.UpdateProfile = async function (Data) {
-    this.DOB = Data.DOB;
-    this.Gender = Data.Gender;
-    this.PhoneNo = Data.PhoneNo;
-    this.Gmail = Data.Gmail;
-    this.UserName = Data.UserName;
-    return this.save();
-  };
-  ClientSchema.methods.AddAddress = async function (Data) {
-    this.Address = Data;
-  };
-module.exports = mongoose.model("client", ClientSchema);
+  this.Orders.Push({ OrderNumber: OrderNumber });
+  this.save();
+};
+ClientSchema.methods.UpdateProfile = async function (Data) {
+  this.DOB = Data.DOB;
+  this.Gender = Data.Gender;
+  this.PhoneNo = Data.PhoneNo;
+  this.Gmail = Data.Gmail;
+  this.UserName = Data.UserName;
+  return this.save();
+};
+ClientSchema.methods.Addaddress = async function (Data) {
 
+  let address;
+  console.log(this.Address)
+  if (this.Address.length === 0) {
+    address = [];
+    address.push();
+  } else address = this.Address;
+  address.push({
+    latitude: Data.Coordinates.lat,
+    longitude: Data.Coordinates.lng,
+    Address: Data.Address,
+    Type: Data.Type,
+    AddressLine1: Data.AddLine1,
+    AddressLine2: Data.AddLine2,
+  });
+  console.log("acd");
+  console.log(address);
+  this.Address = address;
+  console.log(this.Address);
+  return this.save();
+};
+module.exports = mongoose.model("client", ClientSchema);

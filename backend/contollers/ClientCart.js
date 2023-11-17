@@ -10,7 +10,7 @@ exports.getCart = (req, res, next) => {
     .catch((err) => {
       console.log(err);
       res.json({
-        statsu: "202",
+        status: "202",
         message: "Error in Getting you Registered try after few Minutes",
       });
     });
