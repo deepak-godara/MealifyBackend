@@ -1,6 +1,8 @@
 const Hotel = require("../models/Hotel");
 const { cloudinary } = require("../utils/cloudniary");
+const Owner = require("../models/owner");
 const Menu = require("../models/Menu");
+const NewOrder=require("../models/NewOrder")
 // const fetch=require('node-fetch');
 const axios = require("axios");
 const reviews = require("../models/Review");
@@ -14,7 +16,6 @@ exports.OwnergetHotel = (req, res, next) => {
   const id = req.params.id;
   Hotel.find({ Id: id })
     .then((products) => {
-      console.log(typeof products);
       res.json({
         status: "200",
         hotels: products,
@@ -29,47 +30,37 @@ exports.OwnergetHotel = (req, res, next) => {
     });
 };
 exports.OwnerAddHotel = async (req, res, next) => {
-  const id = req.params.id;
-  const name = req.body.name;
-  const City = req.body.City;
-  const address = req.body.Address;
-  const splitedAddress = address.split(",");
-  const image = req.body.image;
-  const city = encodeURIComponent("address");
-  const loca = await axios.get(
-    `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-      address
-    )}&key=${API_KEY}`
-  );
-  const { status, results } = loca.data;
-  let lat1, lng1;
-  if (status === "OK" && results.length > 0) {
-    const { lat, lng } = results[0].geometry.location;
-    lat1 = lat;
-    lng1 = lng;
-  }
-
-  const response = await cloudinary.uploader.upload(image, {
-    upload_preset: "Mealify_Hotel_Images",
-  });
-  const image_id = response.url;
-  Hotel.find({ Name: name })
-    .then((hotel) => {
-      if (hotel.length === 0) {
-        const newHotel = new Hotel({
-          Name: name,
-          City: City,
-          Street: splitedAddress[splitedAddress.length - 4],
-          Image: image_id,
-          Rating: 0,
-          Id: id,
+  const Data = req.body.HotelData;
+  const OwnerId = req.params.id;
+  let hotelid = null;
+  console.log(Data)
+  cloudinary.uploader
+    .upload(Data.Image, {
+      upload_preset: "Mealify_Hotel_Images",
+    })
+    .then((image) => {
+      console.log(image);
+      if (image) {
+        const hotel = new Hotel({
+          Name: Data.HotelName,
+          City: Data.City,
+          Rating:0,
+          Coordinates: {
+            Longitude: Data.Coordinates.lng,
+            Latitude: Data.Coordinates.lat,
+          },
+          Image: image.url,
+          Category: ["Pizzas", "North Indian"],
+          Id: OwnerId,
         });
-        return newHotel.save();
+        return hotel.save();
       } else {
         throw err;
       }
     })
     .then((hotel) => {
+      console.log(hotel)
+      hotelid=hotel._id;
       const Menus = new Menu({
         Id: hotel._id,
         Menu: [],
@@ -86,29 +77,43 @@ exports.OwnerAddHotel = async (req, res, next) => {
       return { id: menu.id, review: review.save() };
     })
     .then((review) => {
-      Location.findOne({ Location: City })
+      Location.findOne({ Location: Data.City })
         .then((locations) => {
           if (locations === null || locations.length === 0) {
             let hot = [];
-            hot.push({ HotelId: review.id, Longitude: lng1, Latitude: lat1 });
-            console.log(hot);
+            hot.push({
+              HotelId: review.id,
+              Longitude: Data.Coordinates.lng,
+              Latitude: Data.Coordinates.lat,
+            });
             const newlocation = new Location({
-              Location: City,
+              Location: Data.City,
               Hotels: hot,
             });
-            return newlocation.save();
+            return {id:review.id,location:newlocation.save()};
           } else {
             const loco = [...locations.Hotels];
-            loco.push({ HotelId: review.id, Longitude: lng1, Latitude: lat1 });
+            loco.push({ HotelId: review.id, Longitude: Data.Coordinates.lng,
+              Latitude: Data.Coordinates.lat,});
             locations.Hotels = loco;
-            return locations.save();
+            return {id:review.id,location:locations.save()};
           }
         })
-        .then((result) => {
-          res.json({ status: "200", message: "HotelAdded successfully" });
-        });
-    })
+      })
+        .then(async(result) => {
+          console.log(result)
+          Owner.findOne({_id:OwnerId})
+          .then(async(owner)=>{
+               owner.HotelId=hotelid;
+               
+               await owner.save();
+               console.log("hotel added")
+            res.json({ status: "200", message: "HotelAdded successfully" });
+          })
+         
+        })
     .catch((err) => {
+      console.log(err)
       res.json({
         status: "200",
         error: "Error in Adding the new Hotel try after few minutes",

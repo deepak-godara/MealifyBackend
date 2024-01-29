@@ -132,9 +132,8 @@ CartSchema.methods.DeleteCart = async function () {
   this.GST = 0;
   this.Delivery = 0;
   this.Total = 0;
-  this.HotelName = "null";
-  this.HotelId = "null";
-  console.log("sdv");
+  this.HotelName = null;
+  this.HotelId = null;
   return this.save();
 };
 module.exports = Mongoose.model("Cart", CartSchema);

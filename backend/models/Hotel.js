@@ -23,7 +23,7 @@ const HotelSchema = new Schema({
   },
   Image: {
     type: String,
-    required: true,
+    // required: true,
   },
   Rating: {
     type: Mongoose.Schema.Types.Decimal128,
@@ -42,7 +42,6 @@ const HotelSchema = new Schema({
 });
 
 HotelSchema.methods.addCategory = async function (category) {
-  console.log("yes");
   const Categories = [...this.Category];
   const index = await this.Category.findIndex((item) => {
     return item === category;

@@ -13,6 +13,11 @@ const OwnerSchema= new Schema({
     Email:{
         type:String,
         required:true
+    },
+    HotelId:{
+        type:Schema.Types.ObjectId,
+        ref:"hotel",
+    
     }
 })
 module.exports=mongoose.model('owner',OwnerSchema);
