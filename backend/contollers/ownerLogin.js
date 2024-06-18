@@ -7,7 +7,8 @@ exports.postLogin=(req,res,next)=>{
     const owner =new ownerLogin({
         UserName:username,
         Password:password,
-        Email:email
+        Email:email,
+        // HotelId:null
     })
     ownerLogin.findOne({UserName:username})
     .then(user=>{
@@ -41,6 +42,7 @@ exports.getLogined=(req,res,next)=>{
         }
         else
         {
+            console.log(user)
             if(user.Email!==email&&user.Password!==password)
              res.status(202).json({message:'Email  and Password are Incorrect',status:'202'});
              else if(user.Email!==email)
@@ -49,8 +51,6 @@ exports.getLogined=(req,res,next)=>{
              res.status(202).json({message:'Password is Incorrect',status:'202'});
              else
              {
-                console.log('owner')
-                console.log(user);
                 res.status(200).json({status:'200',user:user,message:'Successfully loggined'});
              }
         }

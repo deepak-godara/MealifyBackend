@@ -1,15 +1,11 @@
-const Mongoose = required("mongoose");
+const Mongoose = require("mongoose");
 const Schema = Mongoose.Schema;
 const OrderItemSchema = new Schema({
-  FoodName: {
+  Name: {
     type: String,
     required: true,
   },
-  Type: {
-    type: String,
-    required: true,
-  },
-  OrderId: {
+  FoodType: {
     type: String,
     required: true,
   },
@@ -26,28 +22,30 @@ const OrderItemSchema = new Schema({
     required: true,
   },
 });
-const OrderSchema = new Schema({
+const NewOrderSchema = new Schema({
   UserId: {
     type: Schema.Types.ObjectId,
     required: true,
     ref: "client",
+    index: true,
   },
-  HotelName: {
+  OrderId: {
     type: String,
     required: true,
   },
-  OrderStatus: {
+  HotelName: {
     type: String,
     required: true,
   },
   HotelId: {
     type: Schema.Types.ObjectId,
     required: true,
+    ref: "hotel",
+    index: true,
   },
   HotelAddress: {
     type: String,
     required: true,
-    ref: "hotel",
   },
   Items: [OrderItemSchema],
   ItemTotal: {
@@ -85,7 +83,7 @@ const OrderSchema = new Schema({
     },
   },
 });
-OrderSchema.methods.Initiate = async function (Data) {
+NewOrderSchema.methods.Initiate = async function (Data) {
   this.HotelName = Data.HotelName;
   this.UserId = Data.UserId;
   this.RoomId = Data.RoomId;
@@ -109,3 +107,4 @@ OrderSchema.methods.Initiate = async function (Data) {
   };
   return this.save();
 };
+module.exports = Mongoose.model("NewOrder", NewOrderSchema);

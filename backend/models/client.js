@@ -50,22 +50,30 @@ const ClientSchema = new Schema({
     type: Number,
   },
   DOB: {
-    type: String,
+    type: Date,
   },
   Gender: {
     type: String,
+  },
+  ForeGroundImage:{
+    type:String
+  },
+  BackGroundImage:{
+    type:String
   },
   Address: [AddressesSchema],
   CurrentActiveAddress: {
     AddressesSchema,
   },
   Orders: [OrderdSchema],
+  
 });
 ClientSchema.methods.AddOrder = async function (OrderNumber) {
   this.Orders.Push({ OrderNumber: OrderNumber });
   this.save();
 };
 ClientSchema.methods.UpdateProfile = async function (Data) {
+  console.log(Data);
   this.DOB = Data.DOB;
   this.Gender = Data.Gender;
   this.PhoneNo = Data.PhoneNo;
@@ -76,7 +84,6 @@ ClientSchema.methods.UpdateProfile = async function (Data) {
 ClientSchema.methods.Addaddress = async function (Data) {
 
   let address;
-  console.log(this.Address)
   if (this.Address.length === 0) {
     address = [];
     address.push();
@@ -89,10 +96,26 @@ ClientSchema.methods.Addaddress = async function (Data) {
     AddressLine1: Data.AddLine1,
     AddressLine2: Data.AddLine2,
   });
-  console.log("acd");
-  console.log(address);
   this.Address = address;
-  console.log(this.Address);
   return this.save();
 };
+ClientSchema.methods.AddFaceImage=async function (id){
+  this.ForeGroundImage=id;
+  return this.save();
+}
+ClientSchema.methods.AddBackImage=async function(id){
+  this.BackGroundImage=id;
+  return this.save();
+}
+ClientSchema.methods.EditProfile=async function(Data){
+  if(Data.Gender)
+  this.Gender=Data.Gender;
+  if(Data.DOB)
+  this.DOB=Data.DOB;
+  if(Data.PhoneNo)
+  this.PhoneNo=Data.PhoneNo;
+if(Data.UserName)
+this.UserName=Data.UserName;
+return this.save();
+}
 module.exports = mongoose.model("client", ClientSchema);

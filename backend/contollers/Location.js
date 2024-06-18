@@ -23,7 +23,6 @@ const UpdatedHotelList = async (HotelData, FoodItem) => {
   for (let i = 0; i < HotelData.length; i++) {
     const menu = await Menu.findOne({ Id: HotelData[i]._id });
     if (!menu) {
-      console.log("Menu not found");
       return null;
     } else {
       const foundItem = menu.Menu.reduce((acc, menuSchema) => {
@@ -94,7 +93,6 @@ exports.getAllLocation = (req, res, next) => {
 };
 exports.getHotelForLocation = (req, res, next) => {
   const id = req.params.locationid;
-  console.log("shusddssvsdv");
   Location.findOne({ Location: id })
     .populate("Hotels.HotelId")
     .lean()
@@ -106,12 +104,13 @@ exports.getHotelForLocation = (req, res, next) => {
 };
 exports.getHotelForLocationName = (req, res, next) => {
   const name = req.params.locationname;
+  console.log(name);
   Location.findOne({ Location: name })
     .populate("Hotels.HotelId")
     .lean()
     .exec()
     .then((hotels) => {
-      console.log(hotels.Hotels[0].HotelId);
+      console.log(hotels);
       const Hotels = hotels.Hotels.map((item) => {
         return {
           _id: item.HotelId._id.toString(),
@@ -124,11 +123,11 @@ exports.getHotelForLocationName = (req, res, next) => {
           Image: item.HotelId.Image,
         };
       });
+      console.log(Hotels);
       res.json({ status: "200", HotelData: Hotels });
     });
 };
 exports.getLocationForCoordinates = async (req, res, next) => {
-  console.log("dvfdv");
   const address = req.params.locationname;
   if (address.split(" ").length == 1) {
     this.getHotelForLocationName(req, res, next);
@@ -139,8 +138,7 @@ exports.getLocationForCoordinates = async (req, res, next) => {
   let HotelDatas = req.body.HotelData;
   let MenuData = req.body.MenuItem;
   let CategoryData = req.body.CategoryItem;
-  console.log(HotelDatas);
-  if ( (!Dish && !Category)) {
+  if (!Dish && !Category) {
     const loca = await axios.get(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
         address
@@ -152,10 +150,7 @@ exports.getLocationForCoordinates = async (req, res, next) => {
       const { lat, lng } = results[0].geometry.location;
       lat1 = lat;
       lng1 = lng;
-    }
-    else
-    {
-
+    } else {
     }
     // console.log(lat1 + "  " + lng1);
     await fetch(
@@ -200,14 +195,12 @@ exports.getLocationForCoordinates = async (req, res, next) => {
       })
       .then((locs) => {
         let locas2 = [];
-        console.log("Got the Data");
         for (let i = 0; i < locs.length; i++) {
           locas2.push(locs[i].Hotels);
         }
         HotelDatas = locas2;
       })
       .catch((err) => {
-        console.log("niniin");
         res.status(404).json({ error: "Could not fetch the data" });
         return;
       });
@@ -271,8 +264,6 @@ exports.getLocationForCoordinates = async (req, res, next) => {
 };
 exports.getDishes = async (req, res, next) => {
   const Hotels = req.body.HotelData;
-  console.log("getting menus");
-  console.log(Hotels);
   const Data = await DifferentDishes(Hotels);
   if (Data) {
     console.log(Data);

@@ -4,7 +4,7 @@ exports.getCart = (req, res, next) => {
   const id = req.params.client;
   Cart.findOne({ UserId: id })
     .then((cart) => {
-      console.log('yes');
+      console.log("yes");
       res.json({ status: "200", Cart: cart });
     })
     .catch((err) => {
@@ -18,17 +18,18 @@ exports.getCart = (req, res, next) => {
 exports.addToCart = (req, res, next) => {
   const id = req.params.client;
   const hotelid = req.body.Data.HotelId;
-  console.log("cart");
   const Data = req.body.Data;
   const allow = req.query.allow;
-  console.log(allow);
+  console.log(id);
   Cart.findOne({ UserId: id })
     .then((cart) => {
-      if (cart.HotelId === "null") {
+      console.log(cart);
+      if (!cart.HotelId) {
         cart.addNewCart(Data).then((carts) => {
           res.json({ status: "200", message: "item added successfully" });
         });
       } else {
+        console.log(cart.HotelId);
         if (cart.HotelId.toString() !== hotelid.toString()) {
           if (allow === "true") {
             cart.DeleteCart().then((carts) => {
@@ -48,3 +49,6 @@ exports.addToCart = (req, res, next) => {
       res.json({ status: "204", message: "Hotel Name Different" });
     });
 };
+// exports.DeleteCartItems=(req,res,next)={
+// const id=req.params.id
+// }
