@@ -43,6 +43,7 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', '*');
   next();
 });
+
   io.on("connection",(socket)=>{
     console.log(socket.id);
     socket.on("disconnect",()=>{
