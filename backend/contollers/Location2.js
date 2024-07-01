@@ -15,7 +15,7 @@ const UpdateValue = async (data) => {
       arr.push({
         _id: data[i]._id,
         Location: data[i].Location,
-        Hotels: data[i].Hotels[0].HotelId?data[i].Hotels[0].HotelId:data[i].Hotels[0]._id,
+        Hotels: data[i].Hotels[0].HotelId,
       });
     }
     return arr;
@@ -153,13 +153,11 @@ exports.getLocationForCoordinates = async (req, res, next) => {
     }
     const Dish = req.query.Dish;
     const Category = req.query.Category;
-    console.log(req.body.HotelData);
     let HotelData = req.body.HotelData || [];
     let MenuData = req.body.MenuItem || [];
     let CategoryData = req.body.CategoryItem || [];
-    console.log(HotelData)
 
-    if ((!Dish && !Category)||HotelData==null||HotelData.length==0) {
+    if (!Dish && !Category) {
       const loca = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
           address
@@ -203,7 +201,6 @@ exports.getLocationForCoordinates = async (req, res, next) => {
           foreignField: "_id",
           as: "Hotels",
         });
-        console.log(locations[0].Hotels);
         const locs = await UpdateValue(locations);
         let locas2 = [];
         for (let i = 0; i < locs.length; i++) {
@@ -214,8 +211,8 @@ exports.getLocationForCoordinates = async (req, res, next) => {
     }
 
     if (Dish) {
-      const HotelDatas = await UpdatedHotelList(HotelData, Dish);
-      const Hotels = await Hotel.find({ _id: { $in: HotelDatas } });
+      const HotelData = await UpdatedHotelList(HotelData, Dish);
+      const Hotels = await Hotel.find({ _id: { $in: HotelData } });
       for (let i = 0; i < Hotels.length; i++) {
         const imageUrl = cloudinary.url(Hotels[i].Image, { format: "jpg" });
         Hotels[i].Image = imageUrl;
@@ -228,8 +225,8 @@ exports.getLocationForCoordinates = async (req, res, next) => {
         CategoryItem: CategoryData,
       });
     } else if (Category) {
-      const HotelDatas = await UpdatedHotelCategoryList(HotelData, Category);
-      const Hotels = await Hotel.find({ _id: { $in: HotelDatas } });
+      const HotelData = await UpdatedHotelCategoryList(HotelData, Category);
+      const Hotels = await Hotel.find({ _id: { $in: HotelData } });
       res.json({
         status: "200",
         HotelData: Hotels,
@@ -256,7 +253,6 @@ exports.getLocationForCoordinates = async (req, res, next) => {
 exports.getDishes = async (req, res, next) => {
   try {
     const Hotels = req.body.HotelData || [];
-
     const Data = await DifferentDishes(Hotels);
     if (Data) {
       res.json({

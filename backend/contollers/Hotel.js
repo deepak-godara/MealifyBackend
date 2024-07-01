@@ -1,61 +1,58 @@
 const addHotel = require("../models/Hotel");
-const NewOrder=require("../models/NewOrder")
+const NewOrder = require("../models/NewOrder");
 const { cloudinary } = require("../utils/cloudniary");
-exports.getHotel = async(req, res, next) => {
-  const Data = req.body.HotelData;
-  const name = req.body.name;
-  const price = req.body.price;
-  const description = req.body.description;
-  cloudinary.uploader.upload(Data.Image,{
-    upload_preset: "Mealify_Hotel_Images",
-  }).then((image)=>{
+
+exports.getHotel = async (req, res, next) => {
+  try {
+    const { HotelData, name, price, description } = req.body;
+    
+    const image = await cloudinary.uploader.upload(HotelData.Image, {
+      upload_preset: "Mealify_Hotel_Images",
+    });
+
     const hotel = new addHotel({
-      Name: Data.HotelName,
-      City: Data.City,
+      Name: HotelData.HotelName,
+      City: HotelData.City,
       Coordinates: {
-        Longitude: Data.Coordinates.lng,
-        Latitude: Data.Coordinates.lat,
+        Longitude: HotelData.Coordinates.lng,
+        Latitude: HotelData.Coordinates.lat,
       },
       Description: description,
-      Image:image.url,
-      Category:["Pizzas","North Indian"]
+      Image: image.url,
+      Category: ["Pizzas", "North Indian"],
     });
-    hotel
-      .save()
-      .then((result) => {
-        res.status(201).json({ status1: "success", message: "hotel added" });
-      })
-      .catch((err) => console.log(err));
-  })
- 
-};
-exports.postHotel = (req, res, next) => {
-  addHotel
-    .find({ Id: "64cbbe0657131325e53d5766" })
-    .then((products) => {
-      res.json({
-        status: "200",
-        content: products,
-        message: "content dilvered successfully",
-      });
-    })
-    .catch((err) => {
-      console.log(err);
-      res.status(201).json({
-        message: "Error in fetching the data",
-      });
-    });
-};
-exports.getNewOrders=(req,res,next)=>{
-  const hotelid=req.params.hotelid
-  NewOrder.find({HotelId:hotelid})
-  .exec()
-  .then((orders)=>{
-    console.log(typeof orders+" orders")
-    res.json({status:"200", Orders:orders});
-  })
-  .catch(err=> {
-    res.json({status:"201", message:"Error in fecthing the New Orders"})}
-    )
 
+    await hotel.save();
+    res.status(201).json({ status: "success", message: "Hotel added" });
+  } catch (err) {
+    console.error("Error adding hotel:", err);
+    res.status(500).json({ message: "Error adding hotel" });
+  }
+};
+
+exports.postHotel = async (req, res, next) => {
+  try {
+    const products = await addHotel.find({ Id: "64cbbe0657131325e53d5766" });
+
+    res.json({
+      status: "200",
+      content: products,
+      message: "Content delivered successfully",
+    });
+  } catch (err) {
+    console.error("Error fetching hotel data:", err);
+    res.status(500).json({ message: "Error in fetching the data" });
+  }
+};
+
+exports.getNewOrders = async (req, res, next) => {
+  try {
+    const hotelid = req.params.hotelid;
+    const orders = await NewOrder.find({ HotelId: hotelid }).exec();
+
+    res.json({ status: "200", Orders: orders });
+  } catch (err) {
+    console.error("Error fetching new orders:", err);
+    res.status(500).json({ status: "201", message: "Error fetching new orders" });
+  }
 };

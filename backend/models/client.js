@@ -3,7 +3,7 @@ const Mongoose = require("mongoose");
 const Schema = Mongoose.Schema;
 const OrderdSchema = new Schema({
   OrderNumber: {
-    type: Number,
+    type: Schema.Types.ObjectId,
     required: true,
   },
 });
@@ -33,6 +33,10 @@ const AddressesSchema = new Schema({
     required: true,
   },
 });
+const API_KEY = "AIzaSyCu1pHsemJ5XMhOE36gG9e77EE1VTb1QUM";
+const MAPBOX_API_URL = "https://api.mapbox.com/boundaries/v4/mapbox/places";
+const MAPBOX_ACCESS_TOKEN =
+  "pk.eyJ1IjoiZGVlcGFrZ29kYXJhIiwiYSI6ImNsbGh0ZWhldDAycjEzcG5xbmZ2Y3NtcTgifQ.YH0ASk4DJRM5kuTK2FCYxQ";
 const ClientSchema = new Schema({
   UserName: {
     type: String,
@@ -64,14 +68,15 @@ const ClientSchema = new Schema({
   Address: [AddressesSchema],
   CurrentActiveAddress: {
     AddressesSchema,
+    
   },
   Orders: [OrderdSchema],
   
 });
-ClientSchema.methods.AddOrder = async function (OrderNumber) {
-  this.Orders.Push({ OrderNumber: OrderNumber });
-  this.save();
-};
+// ClientSchema.methods.AddOrder = async function (OrderNumber) {
+//   this.Orders.Push({ OrderNumber: OrderNumber });
+//   this.save();
+// };
 ClientSchema.methods.UpdateProfile = async function (Data) {
   console.log(Data);
   this.DOB = Data.DOB;
@@ -117,5 +122,11 @@ ClientSchema.methods.EditProfile=async function(Data){
 if(Data.UserName)
 this.UserName=Data.UserName;
 return this.save();
+}
+ClientSchema.methods.AddOrder=async function(OrderId){
+  console.log(this.Orders)
+  console.log(OrderId)
+  this.Orders.unshift({ OrderNumber: OrderId });
+  return this.save();
 }
 module.exports = mongoose.model("client", ClientSchema);

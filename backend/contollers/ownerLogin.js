@@ -1,61 +1,54 @@
+const OwnerLogin = require('../models/owner');
 
-const ownerLogin = require('../models/owner')
-exports.postLogin=(req,res,next)=>{
-    const username=req.body.username;
-    const password=req.body.password;
-    const email=req.body.email;  
-    const owner =new ownerLogin({
-        UserName:username,
-        Password:password,
-        Email:email,
-        // HotelId:null
-    })
-    ownerLogin.findOne({UserName:username})
-    .then(user=>{
-        if(user)
-        {
-            res.json({status:'202', message:'UserName already in use'})
+exports.postLogin = async (req, res, next) => {
+    try {
+        const { username, password, email } = req.body;
+
+        // Check if username already exists
+        const existingUser = await OwnerLogin.findOne({ UserName: username });
+        if (existingUser) {
+            return res.json({ status: '202', message: 'Username already in use' });
         }
-        else
-        {
-            owner.save()
-            .then(result=>{
-                res.json({status:'200', message:'add successfully'})
-            })
-            .catch(err=>{
-                console.log(err);
-                throw err;
-            })
+
+        // Create new owner instance
+        const owner = new OwnerLogin({
+            UserName: username,
+            Password: password,
+            Email: email,
+        });
+
+        // Save the owner
+        const result = await owner.save();
+        res.json({ status: '200', message: 'Successfully registered' });
+    } catch (err) {
+        console.error('Error in registration:', err);
+        res.status(500).json({ status: '500', message: 'Failed to register owner' });
+    }
+};
+
+exports.getLogined = async (req, res, next) => {
+    try {
+        const { username, password, email } = req.body;
+
+        // Find user by username
+        const user = await OwnerLogin.findOne({ UserName: username });
+        if (!user) {
+            return res.status(202).json({ message: 'Username is Incorrect', status: '202' });
         }
-    })
-   
-}
-exports.getLogined=(req,res,next)=>{
-    const username=req.body.username;
-    const password=req.body.password;
-    const email=req.body.email; 
-    ownerLogin.findOne({UserName:username})
-    .then(user=>{
-        if(!user)
-        {
-            res.status(202).json({message:'UserName is Incorrect', status:'202'});
+
+        // Check email and password
+        if (user.Email !== email && user.Password !== password) {
+            return res.status(202).json({ message: 'Email and Password are Incorrect', status: '202' });
+        } else if (user.Email !== email) {
+            return res.status(202).json({ message: 'Email is Incorrect', status: '202' });
+        } else if (user.Password !== password) {
+            return res.status(202).json({ message: 'Password is Incorrect', status: '202' });
         }
-        else
-        {
-            console.log(user)
-            if(user.Email!==email&&user.Password!==password)
-             res.status(202).json({message:'Email  and Password are Incorrect',status:'202'});
-             else if(user.Email!==email)
-             res.status(202).json({message:'Email is Incorrect',status:'202'});
-             else if(user.Password!==password)
-             res.status(202).json({message:'Password is Incorrect',status:'202'});
-             else
-             {
-                res.status(200).json({status:'200',user:user,message:'Successfully loggined'});
-             }
-        }
-    })
-    .catch(err=>{
-        throw err;
-    })
-}
+
+        // If all credentials are correct
+        res.status(200).json({ status: '200', user: user, message: 'Successfully logged in' });
+    } catch (err) {
+        console.error('Error in login:', err);
+        res.status(500).json({ status: '500', message: 'Failed to log in' });
+    }
+};

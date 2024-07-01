@@ -1,84 +1,84 @@
 const Client = require("../models/client");
+const Orders = require("../models/ActiveOrder");
 const { cloudinary } = require("../utils/cloudniary");
-exports.AddAddress = (req, res, next) => {
-  const id = req.params.clientid;
-  const Address = req.body.Address;
-  Client.findOne({ _id: id })
-    .then((client) => {
-      return client.Addaddress(Address);
-    })
-    .then((Address) => {
-      res.status(200).json({
-        message: "AddressAdded",
-      });
-      return;
-    })
-    .catch((err) => {
-      res.status(202).json({
-        message: "Error in Adding",
-      });
-    });
+
+exports.AddAddress = async (req, res, next) => {
+  try {
+    const id = req.params.clientid;
+    const Address = req.body.Address;
+    const client = await Client.findOne({ _id: id });
+    await client.Addaddress(Address);
+    res.status(200).json({ message: "Address added successfully" });
+  } catch (err) {
+    console.error("Error in adding address:", err);
+    res.status(202).json({ message: "Error in adding address" });
+  }
 };
+
 exports.AddForeImage = async (req, res, next) => {
-  const id = req.params.clientid;
-  let url;
-  cloudinary.uploader
-    .upload(req.body.Image, {
+  try {
+    const id = req.params.clientid;
+    const image = await cloudinary.uploader.upload(req.body.Image, {
       upload_preset: "Mealify_Hotel_Images",
-    })
-    .then((image) => {
-      url = image.url;
-      Client.findOne({ _id: id }).then((client) => {
-        return client.AddBackImage(url);
-      });
-    })
-    .then((image) => {
-      res.status(200).json({ message: "Fore BackGround Image Added" });
-    })
-    .catch((err) => {
-      res.json({ status: "202", Message: "Error in updating profile" });
     });
+    const url = image.url;
+    const client = await Client.findOne({ _id: id });
+    await client.AddForeImage(url);
+    res.status(200).json({ message: "Foreground image added successfully" });
+  } catch (err) {
+    console.error("Error in adding foreground image:", err);
+    res.status(202).json({ message: "Error in adding foreground image" });
+  }
 };
+
 exports.AddBackImage = async (req, res, next) => {
-  const id = req.params.clientid;
-  let url;
-  cloudinary.uploader
-    .upload(req.body.Image, {
+  try {
+    const id = req.params.clientid;
+    const image = await cloudinary.uploader.upload(req.body.Image, {
       upload_preset: "Mealify_Hotel_Images",
-    })
-    .then((image) => {
-      url = image.url;
-      Client.findOne({ _id: id }).then((client) => {
-        return client.AddFaceImage(url);
-      });
-    })
-    .then((image) => {
-      res.status(200).json({ message: "Fore BackGround Image Added" });
-    })
-    .catch((err) => {
-      res.json({ status: "202", Message: "Error in updating profile" });
     });
+    const url = image.url;
+    const client = await Client.findOne({ _id: id });
+    await client.AddBackImage(url);
+    res.status(200).json({ message: "Background image added successfully" });
+  } catch (err) {
+    console.error("Error in adding background image:", err);
+    res.status(202).json({ message: "Error in adding background image" });
+  }
 };
+
 exports.ClientData = async (req, res, next) => {
-  const id = req.params.clientid;
-  Client.findOne({ _id: id }).then((client) => {
-    res
-      .status(200)
-      .json({ status: "200", message: "Data fetched", Data: client });
-  });
+  try {
+    const id = req.params.clientid;
+    const client = await Client.findOne({ _id: id });
+    res.status(200).json({ status: "200", message: "Data fetched", Data: client });
+  } catch (err) {
+    console.error("Error in fetching client data:", err);
+    res.status(202).json({ status: "202", message: "Error in fetching client data" });
+  }
 };
+
 exports.UpdateProfile = async (req, res, next) => {
-  const id = req.params.clientid;
-  console.log(req.body.Data);
-  Client.findOne({ _id: id })
-    .then((client) => {
-      console.log(client);
-      return client.UpdateProfile(req.body.Data);
-    })
-    .then((result) => {
-      res.json({ status: "200", Message: "Proffile Updated Successfully" });
-    })
-    .catch((err) => {
-      res.json({ status: "202", Message: "Error in updating profile" });
-    });
+  try {
+    const id = req.params.clientid;
+    const data = req.body.Data;
+    const client = await Client.findOne({ _id: id });
+    await client.UpdateProfile(data);
+    res.json({ status: "200", message: "Profile updated successfully" });
+  } catch (err) {
+    console.error("Error in updating profile:", err);
+    res.json({ status: "202", message: "Error in updating profile" });
+  }
 };
+
+exports.Getorderdetails = async (req, res, next) => {
+  try {
+    const id = req.params.orderid;
+    const order = await Orders.findOne({ _id: id });
+    res.json({ status: "200", message: "Success", order: order, id: id });
+  } catch (err) {
+    console.error("Error in fetching order details:", err);
+    res.json({ status: "202", message: "Error in fetching order details" });
+  }
+};
+

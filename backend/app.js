@@ -11,7 +11,7 @@ const clientRoute = require("./routes/client");
 const ownerRoute = require("./routes/owner");
 const homeRoute = require("./routes/Home");
 const CartRoute = require("./routes/Cart");
-const SocketFunction=require("./utils/Sockets")
+const SocketFunction = require("./utils/Sockets");
 // Middleware for parsing JSON data
 app.use(express.json({ limit: "50mb" }));
 app.use(cors());
@@ -47,7 +47,7 @@ app.use((req, res, next) => {
 });
 io.on("connection", (socket) => {
   // console.log(socket.id)
-SocketFunction.SocketFunction(socket,io)
+  SocketFunction.SocketFunction(socket, io);
 });
 
 app.use(homeRoute);

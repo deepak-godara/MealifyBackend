@@ -10,4 +10,5 @@ router.post('/:clientid/foreimage',ClientOperationController.AddForeImage)
 router.post('/:clientid/backimage',ClientOperationController.AddBackImage)
 router.get("/:clientid/data",ClientOperationController.ClientData)
 router.post("/:clientid/updateprofile",ClientOperationController.UpdateProfile)
+router.get("/:orderid/getorderdetails",ClientOperationController.Getorderdetails)
 module.exports=router

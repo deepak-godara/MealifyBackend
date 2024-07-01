@@ -2,10 +2,11 @@ let ActiveOwners = new Map();
 let ActiveUsers = new Map();
 let ActiveOrders = new Map();
 let NewOrder = new Map();
-let OwnerOrderMap=new Map();
+let OwnerOrderMap = new Map();
 let OrderCount = 0;
 const Hotel = require("../models/Hotel");
-const Carts=require("../models/Cart")
+const Carts = require("../models/Cart");
+const User = require("../models/client");
 const NewOrders = require("../models/NewOrder");
 const Activeorders = require("../models/ActiveOrder");
 function CheckNewOrderValidity() {
@@ -17,59 +18,64 @@ function CheckNewOrderValidity() {
 function SocketsFunctions(socket, io) {
   // console.log(scokets);
   socket.on("join", async (message) => {
-    try{
-    console.log(message);
-    if (message.User === "User") {
-      ActiveUsers = await filters(message.id, ActiveUsers);
-      const UserId = message.id;
-      const Socketid = socket.id;
-      let pair = [socket.id, message.id];
-      ActiveUsers.set(UserId, Socketid);
-    } else {
-      var newsockets = await filters(message.id, ActiveOwners);
-      ActiveOwners = newsockets;
-      let pair = [socket.id, message.id];
-      const UserId = message.id;
-      const Socketid = socket.id;
-      ActiveOwners.set(UserId, Socketid);
+    try {
+      // console.log(message);
+      if (message.User === "User") {
+        ActiveUsers = await filters(message.id, ActiveUsers);
+        const UserId = message.id;
+        const Socketid = socket.id;
+        let pair = [socket.id, message.id];
+        ActiveUsers.set(UserId, Socketid);
+      } else {
+        var newsockets = await filters(message.id, ActiveOwners);
+        ActiveOwners = newsockets;
+        let pair = [socket.id, message.id];
+        const UserId = message.id;
+        const Socketid = socket.id;
+        // console.log(pair);
+        ActiveOwners.set(UserId, Socketid);
+        console.log(ActiveOwners);
+      }
+    } catch (err) {
+      console.log(err);
     }
-    console.log(ActiveOwners);
-    console.log(ActiveUsers);
-  }
-catch(err){
-  console.log(err);
-}}
-  );
+  });
   socket.on("message", ({ Cart }) => {
     console.log(Cart);
     // console.log(socket.id)
   });
   socket.on("NewOrder", async ({ id, Cart, UserId }) => {
-    Hotel.findOne({ _id: id }).then(async (hotels) => {
-      console.log("got the owner", hotels.Id)
-      console.log(ActiveOwners.has(hotels.Id.toString()))
-      if (ActiveOwners.has(hotels.Id.toString())) {
-        console.log("got the owner")
-        const ids = ActiveOwners.get(hotels.Id.toString());
+    try {
+      const hotel = await Hotel.findOne({ _id: id });
+      if (!hotel) {
+        socket.emit("OrderConfirmation", {
+          message: "Hotel not found",
+          code: 404,
+        });
+        return;
+      }
+  
+      if (ActiveOwners.has(hotel.Id.toString())) {
+        const ids = ActiveOwners.get(hotel.Id.toString());
         const CurrentDate = new Date();
         const formattedDate = CurrentDate.toISOString()
           .slice(0, 10)
           .replace(/-/g, "");
-        OrderCount = OrderCount + 1;
+  
+        OrderCount += 1;  // Increment the order count
         console.log(OrderCount);
-        // const pair = ActiveOwners[ids];
-        // console.log(pair[0]);
+  
         const Order = new NewOrders({
           HotelName: Cart.HotelName,
           UserId: UserId,
           OrderId: `${formattedDate}${OrderCount}`,
-          HotelAddress: hotels.City,
+          HotelAddress: hotel.City,
           HotelId: Cart.HotelId,
-          OwnerId: hotels.Id,
-          Items: Cart.Items.map((items) => {
+          OwnerId: hotel.Id,
+          Items: Cart.Items.map((item) => {
             return {
-              ...items,
-              Total: +items.Price * +items.Quantity,
+              ...item,
+              Total: +item.Price * +item.Quantity,
             };
           }),
           ItemTotal: Cart.BillDetails.SubTotal,
@@ -77,29 +83,16 @@ catch(err){
           Delivery: Cart.BillDetails.Delivery,
           Total: Cart.BillDetails.Total,
           OrderDetails: {
-            Date: "sdvd",
+            Date: CurrentDate.toString(),
             Payment: "Cash On Delivery",
-            DeliverTo: "sdvvs",
+            DeliverTo: "Delivery Address",
             PhoneNo: 123456778,
           },
         });
-        await Order.save();
-        console.log(ids)
-        await Carts.findOne({UserId:UserId}).then(
-          Carts=>{
-               Carts.HotelId=null;
-               Carts.HotelName=null;
-               Carts.Items=[]
-               Carts.SubTotal=0;
-               Carts.GST=0;
-               Carts.Delivery=0;
-               Carts.Total=0;
-               Carts.Quantity=0;
-               return Carts.save()
-          }
-        )
+  
        
-        await io.to(ids).emit(
+  
+        io.to(ids).emit(
           "NewOrderReceived",
           {
             message: "new order",
@@ -110,14 +103,15 @@ catch(err){
           },
           async (acknowledgment) => {
             if (acknowledgment) {
+              await Order.save();
               const pairs = [[Order.UserId, Order.HotelId], CurrentDate];
               NewOrder.set(Order.OrderId, pairs);
-              console.log("added new order")
+              console.log("added new order");
             } else {
-              NewOrders.findOneAndDelete({ OrderId: Order.OrderId });
+              await NewOrders.findOneAndDelete({ OrderId: Order.OrderId });
               socket.emit("OrderConfirmation", {
                 message:
-                  "Can't place your order as hotel has turned of new orders",
+                  "Can't place your order as hotel has turned off new orders",
                 code: 201,
               });
             }
@@ -125,57 +119,95 @@ catch(err){
         );
       } else {
         socket.emit("OrderConfirmation", {
-          message: "Can't place your order as hotel has turned of new orders",
+          message: "Can't place your order as hotel has turned off new orders",
           code: 201,
         });
       }
-    });
+    } catch (err) {
+      console.error(err);
+      socket.emit("OrderConfirmation", {
+        message: "An error occurred while placing your order",
+        code: 500,
+      });
+    }
   });
-  socket.on(
-    "OrderConfirmationFromHotel",
-    async ({ orderid, code, OrderData }) => {
+  socket.on("OrderConfirmationFromHotel", async ({ orderid, code, OrderData }) => {
+    try {
       console.log(orderid + " " + code);
       const CurrentDate = new Date();
+  
       if (NewOrder.has(orderid)) {
-        console.log("verfied the order")
         const Order = NewOrder.get(orderid);
-        console.log(Order)
-        if (Math.abs(CurrentDate - Order[1]) / 1000 <= 60) {
+        const orderTimeDifference = Math.abs(CurrentDate - Order[1]) / 1000;
+  
+        if (orderTimeDifference <= 60) {
           if (ActiveUsers.has(Order[0][0].toString())) {
             const socketId = ActiveUsers.get(Order[0][0].toString());
+  
             if (code === 0) {
-              console.log("order rejeected")
               io.to(socketId).emit("OrderConfirmationByHotel", {
                 message: "Order Rejected by Hotel",
                 code: "202",
               });
               await NewOrders.deleteOne({ OrderId: orderid });
             } else {
-
               io.to(socketId).emit("OrderConfirmationByHotel", {
                 message: "Order Accepted by Hotel",
                 code: "200",
               });
-              console.log(OrderData);
-              delete OrderData._id;
-              const ActOrder = { ...OrderData, OrderStatus: "Accepted",OwnerId:Order[0][1] };
-              const NewActiveOrder = new Activeorders(ActOrder);
-              await NewActiveOrder.save();
+            }
+          }
+  
+          if (code !== 0) {
+            delete OrderData._id;
+            const ActOrder = {
+              ...OrderData,
+              OrderStatus: "Accepted",
+              OwnerId: Order[0][1],
+            };
+  
+            const NewActiveOrder = new Activeorders(ActOrder);
+            let OrderIds;
+  
+            try {
+              const savedOrder = await NewActiveOrder.save();
+              OrderIds = savedOrder._id;
+  
+              const user = await User.findById(OrderData.UserId);
+              console.log(user);
+              user.AddOrder(OrderIds);
+  
+              const cart = await Carts.findOne({ UserId: user._id });
+              if (cart) {
+                cart.HotelId = null;
+                cart.HotelName = null;
+                cart.Items = [];
+                cart.SubTotal = 0;
+                cart.GST = 0;
+                cart.Delivery = 0;
+                cart.Total = 0;
+                cart.Quantity = 0;
+                await cart.save();
+              }
+  
               ActiveOrders.set(orderid, OrderData);
               NewOrder = await NewOrderFilter(orderid, NewOrder);
               await NewOrders.deleteOne({ OrderId: orderid });
+            } catch (err) {
+              console.error(err);
             }
-          } else {
           }
         }
-        else{
-          console.log('order recieved late')
-          NewOrder = await NewOrderFilter(orderid, NewOrder);
-          await NewOrders.deleteOne({ OrderId: orderid });
-        }
+      } else {
+        console.log("Order received late");
+        NewOrder = await NewOrderFilter(orderid, NewOrder);
+        await NewOrders.deleteOne({ OrderId: orderid });
       }
+    } catch (err) {
+      console.error("Error processing order confirmation from hotel:", err);
     }
-  );
+  });
+  
   async function NewOrderFilter(id, map) {
     return new Map([...map].filter(([key, value]) => key != id));
   }
