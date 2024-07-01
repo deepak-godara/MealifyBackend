@@ -45,10 +45,12 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Headers", "*");
   next();
 });
-io.on("connection", (socket) => {
-  // console.log(socket.id)
-  SocketFunction.SocketFunction(socket, io);
-});
+  io.on("connection",(socket)=>{
+    console.log(socket.id);
+    socket.on("disconnect",()=>{
+       console.log("UserDisconnected",socket.id)
+    })
+  })
 
 app.use(homeRoute);
 app.use(addHotelRoute);
