@@ -131,6 +131,7 @@ function SocketsFunctions(socket, io) {
       });
     }
   });
+
   socket.on("OrderConfirmationFromHotel", async ({ orderid, code, OrderData }) => {
     try {
       console.log(orderid + " " + code);
@@ -208,6 +209,28 @@ function SocketsFunctions(socket, io) {
     }
   });
   
+  socket.on("statusUpdateMessage",({ status, ownerId, userId, orderId }) => {
+    const activeUserId = ActiveUsers.get(userId.toString());
+    console.log("Status change from user side is:", activeUserId);
+    if (activeUserId) {
+      io.to(activeUserId).emit("changeStatusUserside", { status, ownerId, userId, orderId });
+      console.log("Status change has been sent by owner to user.");
+    } else {
+      console.error(`User with ID ${userId} not found in ActiveUsers.`);
+    }
+  });
+  
+
+socket.on("deliveryConfirmationByiUser" , async(orderId, ownerId, useId, status)=>{
+  const  Ownerid =  ActiveOwners.get(ownerId.toString());
+  if(Ownerid){
+    io.to(Ownerid).emit("DeliveryConfirmed" ,{orderId:orderId , status:status});
+
+    console.log("Order delivery  Conformed by  user");
+  }
+})
+
+
   async function NewOrderFilter(id, map) {
     return new Map([...map].filter(([key, value]) => key != id));
   }

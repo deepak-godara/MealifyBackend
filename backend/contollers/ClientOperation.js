@@ -5,6 +5,9 @@ const { cloudinary } = require("../utils/cloudniary");
 exports.AddAddress = async (req, res, next) => {
   try {
     const id = req.params.clientid;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: 'Invalid client  ID' });
+    }
     const Address = req.body.Address;
     const client = await Client.findOne({ _id: id });
     await client.Addaddress(Address);
@@ -18,6 +21,9 @@ exports.AddAddress = async (req, res, next) => {
 exports.AddForeImage = async (req, res, next) => {
   try {
     const id = req.params.clientid;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: 'Invalid client  ID' });
+    }
     const image = await cloudinary.uploader.upload(req.body.Image, {
       upload_preset: "Mealify_Hotel_Images",
     });
@@ -34,6 +40,9 @@ exports.AddForeImage = async (req, res, next) => {
 exports.AddBackImage = async (req, res, next) => {
   try {
     const id = req.params.clientid;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: 'Invalid client  ID' });
+    }
     const image = await cloudinary.uploader.upload(req.body.Image, {
       upload_preset: "Mealify_Hotel_Images",
     });
@@ -50,6 +59,9 @@ exports.AddBackImage = async (req, res, next) => {
 exports.ClientData = async (req, res, next) => {
   try {
     const id = req.params.clientid;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: 'Invalid client  ID' });
+    }
     const client = await Client.findOne({ _id: id });
     res.status(200).json({ status: "200", message: "Data fetched", Data: client });
   } catch (err) {
@@ -62,6 +74,9 @@ exports.UpdateProfile = async (req, res, next) => {
   try {
     const id = req.params.clientid;
     const data = req.body.Data;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: 'Invalid client  ID' });
+    }
     const client = await Client.findOne({ _id: id });
     await client.UpdateProfile(data);
     res.json({ status: "200", message: "Profile updated successfully" });
@@ -74,6 +89,9 @@ exports.UpdateProfile = async (req, res, next) => {
 exports.Getorderdetails = async (req, res, next) => {
   try {
     const id = req.params.orderid;
+    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).send({ message: 'Invalid order ID' });
+    }
     const order = await Orders.findOne({ _id: id });
     res.json({ status: "200", message: "Success", order: order, id: id });
   } catch (err) {
