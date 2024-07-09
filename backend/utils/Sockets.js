@@ -18,6 +18,7 @@ function CheckNewOrderValidity() {
 function SocketsFunctions(socket, io) {
   // console.log(scokets);
   socket.on("join", async (message) => {
+    console.log("yes")
     try {
       // console.log(message);
       if (message.User === "User") {
@@ -34,8 +35,9 @@ function SocketsFunctions(socket, io) {
         const Socketid = socket.id;
         // console.log(pair);
         ActiveOwners.set(UserId, Socketid);
-        console.log(ActiveOwners);
+       
       }
+      console.log(ActiveOwners);
     } catch (err) {
       console.log(err);
     }
