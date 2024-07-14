@@ -17,4 +17,20 @@ const getActiveOrders = asyncHandler(async(req, res) =>{
 
 })
 
-module.exports = {getActiveOrders}
+const saveOrderStatus = asyncHandler(async (req, res) => {
+    const { orderId , status} = req.body;
+    try {
+        const order = await Activeorder.findById(orderId);
+        if(!order){
+            return  res.status(404).json({message:'order not found   saveorderSatus request'})
+        }
+        order.status= status;
+        await order.save();
+        res.status(200).json({ message :"order status is updated successfully "})
+    } catch (error) {
+        return res.status(404).json(error);
+    }
+});
+
+
+module.exports = {getActiveOrders , saveOrderStatus }

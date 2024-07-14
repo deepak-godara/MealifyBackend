@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Client = require("../models/client");
 const Orders = require("../models/ActiveOrder");
 const { cloudinary } = require("../utils/cloudniary");
@@ -59,9 +60,9 @@ exports.AddBackImage = async (req, res, next) => {
 exports.ClientData = async (req, res, next) => {
   try {
     const id = req.params.clientid;
-    if (!id || !mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).send({ message: 'Invalid client  ID' });
-    }
+    // if (!id || !mongoose.Types.ObjectId.isValid(id)) {
+    //   return res.status(400).send({ message: 'Invalid client  ID' });
+    // }
     const client = await Client.findOne({ _id: id });
     res.status(200).json({ status: "200", message: "Data fetched", Data: client });
   } catch (err) {
@@ -78,7 +79,7 @@ exports.UpdateProfile = async (req, res, next) => {
       return res.status(400).send({ message: 'Invalid client  ID' });
     }
     const client = await Client.findOne({ _id: id });
-    await client.UpdateProfile(data);
+    await client.UpdateProfile(data); 
     res.json({ status: "200", message: "Profile updated successfully" });
   } catch (err) {
     console.error("Error in updating profile:", err);

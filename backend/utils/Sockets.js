@@ -223,14 +223,14 @@ function SocketsFunctions(socket, io) {
   });
   
 
-socket.on("deliveryConfirmationByiUser" , async(orderId, ownerId, useId, status)=>{
-  const  Ownerid =  ActiveOwners.get(ownerId.toString());
+socket.on("deliveryConfirmationByiUser" , async({orderId, ownerId, useId, status})=>{
+  console.log("ownerId  " , ownerId)
+  const  Ownerid =  ActiveOwners.get(ownerId);
   if(Ownerid){
     io.to(Ownerid).emit("DeliveryConfirmed" ,{orderId:orderId , status:status});
-
     console.log("Order delivery  Conformed by  user");
   }
-})
+}) 
 
 
   async function NewOrderFilter(id, map) {
