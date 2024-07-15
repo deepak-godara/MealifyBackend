@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const Mongoose = require("mongoose");
 const Schema = Mongoose.Schema;
+const { v4: uuidv4 } = require('uuid');
 const OrderdSchema = new Schema({
   OrderNumber: {
     type: Schema.Types.ObjectId,
@@ -8,6 +9,11 @@ const OrderdSchema = new Schema({
   },
 });
 const AddressesSchema = new Schema({
+  Aid:{
+    type: String,
+    unique: true,
+    default: uuidv4,
+  },
   longitude: {
     type: Mongoose.Schema.Types.Decimal128,
     required: true,
