@@ -135,10 +135,11 @@ function SocketsFunctions(socket, io) {
   });
   socket.on("OrderConfirmationFromHotel", async ({ orderid, code, OrderData }) => {
     try {
-      console.log(orderid + " " + code);
+      console.log(orderid + " higi " + code);
       const CurrentDate = new Date();
   
       if (NewOrder.has(orderid)) {
+        console.log("orderfound")
         const Order = NewOrder.get(orderid);
         const orderTimeDifference = Math.abs(CurrentDate - Order[1]) / 1000;
   
@@ -176,9 +177,9 @@ function SocketsFunctions(socket, io) {
               OrderIds = savedOrder._id;
   
               const user = await User.findById(OrderData.UserId);
-              console.log(user);
+              // console.log(user);
               user.AddOrder(OrderIds);
-  
+     console.log("emptying the cart")
               const cart = await Carts.findOne({ UserId: user._id });
               if (cart) {
                 cart.HotelId = null;

@@ -124,8 +124,6 @@ this.UserName=Data.UserName;
 return this.save();
 }
 ClientSchema.methods.AddOrder=async function(OrderId){
-  console.log(this.Orders)
-  console.log(OrderId)
   this.Orders.unshift({ OrderNumber: OrderId });
   return this.save();
 }
