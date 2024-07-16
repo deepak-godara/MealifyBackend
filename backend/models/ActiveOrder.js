@@ -89,6 +89,14 @@ const ActiveOrderSchema = new Schema({
       required: true,
     },
   },
+  UserDeliveryConfirmation:{
+    type:Boolean,
+    required:true
+  },
+  HotelDeliveryConfirmation:{
+    type:Boolean,
+    required:true
+  },
 });
 ActiveOrderSchema.methods.Initiate = async function (Data) {
   this.HotelName = Data.HotelName;

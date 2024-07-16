@@ -88,7 +88,7 @@ NewOrderSchema.methods.Initiate = async function (Data) {
   this.UserId = Data.UserId;
   this.RoomId = Data.RoomId;
   (this.HotelAddress = Data.HotelAddress), (this.HotelId = Data.HotelId);
-  this.OrderStatus = "Order been prepared";
+  this.OrderStatus = "Order pending ";
   this.Items = Data.item.map((items) => {
     return {
       ...items,

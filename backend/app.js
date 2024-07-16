@@ -11,7 +11,10 @@ const ownerRoute = require("./routes/owner");
 const homeRoute = require("./routes/Home");
 const CartRoute = require("./routes/Cart");
 const SocketFunction = require("./utils/Sockets").SocketFunction; // Import the SocketFunction
-
+const JoinFunction =require("./utils/Join").SocketJoin;
+const AddOrder=require("./utils/NewOrder").AddOrder
+const OrderConfirmation=require("./utils/OrderConfirmation").OrderConfirm
+const Initiate=require("./utils/DataStructures").Initiate
 const app = express();
 
 // Middleware for parsing JSON data
@@ -51,7 +54,11 @@ app.use((req, res, next) => {
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
-  SocketFunction(socket, io); // Call SocketFunction here
+  SocketFunction(socket, io); 
+  JoinFunction(socket,io);
+  AddOrder(socket,io);
+  OrderConfirmation(socket,io);
+  Initiate()
   socket.on("disconnect", () => {
     console.log("User disconnected:", socket.id);
   });
@@ -62,3 +69,4 @@ app.use(addHotelRoute);
 app.use(clientRoute);
 app.use(ownerRoute);
 app.use(CartRoute);
+module.exports={io};

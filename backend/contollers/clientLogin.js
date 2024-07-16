@@ -17,7 +17,6 @@ exports.postLogin = async (req, res, next) => {
       ForeGroundImage: null,
       BackGroundImage: null,
       Address: [],
-      Orders: [],
     });
 
     const savedClient = await Client.save();

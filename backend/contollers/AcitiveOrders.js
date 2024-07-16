@@ -20,7 +20,7 @@ const getActiveOrders = asyncHandler(async(req, res) =>{
 const saveOrderStatus = asyncHandler(async (req, res) => {
     const { orderId , status} = req.body;
     try {
-        const order = await Activeorder.findById(orderId);
+        const order = await Activeorder.findOne({OrderId:orderId});
         if(!order){
             return  res.status(404).json({message:'order not found   saveorderSatus request'})
         }

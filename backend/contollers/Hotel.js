@@ -1,6 +1,8 @@
 const addHotel = require("../models/Hotel");
 const NewOrder = require("../models/NewOrder");
+const ActvieOrder=require("../models/ActiveOrder")
 const { cloudinary } = require("../utils/cloudniary");
+const ActiveOrder = require("../models/ActiveOrder");
 
 exports.getHotel = async (req, res, next) => {
   try {
@@ -56,3 +58,14 @@ exports.getNewOrders = async (req, res, next) => {
     res.status(500).json({ status: "201", message: "Error fetching new orders" });
   }
 };
+exports.getActiveOrders=async(req,res,next)=>{
+  try{
+    const hotelid=req.params.hotelid;
+    const orders=await  ActiveOrder.find({HotelId:hotelid}).exec();
+    res.status(200).json({Orders:orders});
+  }
+  catch (err) {
+    console.error("Error fetching new orders:", err);
+    res.status(500).json({ status: "201", message: "Error fetching new orders" });
+  }
+}

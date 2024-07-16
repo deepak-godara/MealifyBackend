@@ -76,7 +76,6 @@ const ClientSchema = new Schema({
     AddressesSchema,
     
   },
-  Orders: [OrderdSchema],
   
 });
 // ClientSchema.methods.AddOrder = async function (OrderNumber) {
