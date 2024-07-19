@@ -26,11 +26,12 @@ app.use(express.urlencoded({ limit: "50mb", extended: true }));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    // origin: "http://localhost:3000",
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
-
+  
 mongoose
   .connect(
     "mongodb+srv://DeepakGodara:DeepakGodara@cluster1.babvun5.mongodb.net/shop?retryWrites=true&w=majority"
@@ -70,3 +71,4 @@ app.use(clientRoute);
 app.use(ownerRoute);
 app.use(CartRoute);
 module.exports={io};
+       

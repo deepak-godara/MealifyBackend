@@ -1,5 +1,6 @@
-const Mongoose = require("mongoose");
-const Schema = Mongoose.Schema;
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
 const OrderItemSchema = new Schema({
   Name: {
     type: String,
@@ -22,6 +23,7 @@ const OrderItemSchema = new Schema({
     required: true,
   },
 });
+
 const ActiveOrderSchema = new Schema({
   UserId: {
     type: Schema.Types.ObjectId,
@@ -44,10 +46,10 @@ const ActiveOrderSchema = new Schema({
     type: Schema.Types.ObjectId,
     required: true,
   },
-  OwnerId:{
-    type:Schema.Types.ObjectId,
-    required:true,
-    ref:"owner"
+  OwnerId: {
+    type: Schema.Types.ObjectId,
+    required: true,
+    ref: "owner",
   },
   HotelAddress: {
     type: String,
@@ -89,20 +91,25 @@ const ActiveOrderSchema = new Schema({
       required: true,
     },
   },
-  UserDeliveryConfirmation:{
-    type:Boolean,
-    required:true
+  UserDeliveryConfirmation: {
+    type: Boolean,
+    required: true,
   },
-  HotelDeliveryConfirmation:{
-    type:Boolean,
-    required:true
+  HotelDeliveryConfirmation: {
+    type: Boolean,
+    required: true,
   },
+  Status: {
+    type: [String],
+    default: ["Accpeted"]
+  }
 });
+
 ActiveOrderSchema.methods.Initiate = async function (Data) {
   this.HotelName = Data.HotelName;
   this.UserId = Data.UserId;
   this.RoomId = Data.RoomId;
-  this.HotelAddress = Data.HotelAddress, 
+  this.HotelAddress = Data.HotelAddress;
   this.HotelId = Data.HotelId;
   this.OrderStatus = "Order been prepared";
   this.Items = Data.item.map((items) => {
@@ -115,12 +122,19 @@ ActiveOrderSchema.methods.Initiate = async function (Data) {
   this.GST = Data.GST;
   this.Delivery = Data.Delivery;
   this.Total = Data.Total;
-  this.OrderDetail = {
+  this.OrderDetails = {
     Date: "sdvd",
     Payment: "Cash On Delivery",
     DeliverTo: Data.OtherDetails.UserAddress,
     PhoneNo: Data.OtherDetails.PhoneNo,
   };
+  this.Status = [...new Set(this.Status).add("Accepted")];
   return this.save();
 };
-module.exports=Mongoose.model("ActiveOrder",ActiveOrderSchema)
+
+ActiveOrderSchema.methods.addStatus = function (status) {
+  this.Status = [...new Set(this.Status).add(status)];
+  return this.save();
+};
+
+module.exports = mongoose.model("ActiveOrder", ActiveOrderSchema);
