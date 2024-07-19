@@ -1,8 +1,8 @@
-let ActiveOwners = new Map();
-let ActiveUsers = new Map();
-let ActiveOrders = new Map();
-let NewOrder = new Map();
-let OwnerOrderMap = new Map();
+// let ActiveOwners = new Map();
+// let ActiveUsers = new Map();
+// let ActiveOrders = new Map();
+// let NewOrder = new Map();
+// let OwnerOrderMap = new Map();
 let OrderCount = 0;
 const Hotel = require("../models/Hotel");
 const Carts = require("../models/Cart");
