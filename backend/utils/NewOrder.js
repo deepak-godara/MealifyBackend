@@ -17,7 +17,7 @@ function AddOrders(socket,io){
           let Owner= await OwnerFind(hotel.Id)
           if (Owner!=null) {
             const ids = String(Owner)
-            const CurrentDate = new Date();
+            const CurrentDate = new Date(); 
             const formattedDate = CurrentDate.toISOString()
               .slice(0, 10)
               .replace(/-/g, "");

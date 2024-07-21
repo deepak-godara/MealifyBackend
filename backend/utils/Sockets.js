@@ -76,6 +76,30 @@ function SocketsFunctions(socket, io) {
     }
   );
   
+  socket.on("requestForDeliveryConfirmationByOwner", async ({ UserId, OwnerId, OrderId }) => {
+    try {
+      const userId = await UsersFind(UserId);
+      const ownerId = await OwnerFind(OwnerId);  
+      if (!userId) {
+        console.log("User not found");
+        return;
+      }
+      console.log("User ID from requestForDeliveryConfirmationByOwner is: ", userId);
+      const order = await Activeorders.findById(OrderId);
+      if (!order) {
+        console.log("Order not found");
+        return;
+      }
+      order.HotelDeliveryConfirmation = true;
+      await order.save();
+      io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
+      console.log("Confirmation sent by owner to user for delivery");
+    } catch (error) {
+      console.log("Error occurred in finding active user or processing order: ", error);
+    }
+  });
+  
+
   async function NewOrderFilter(id, map) {
     return new Map([...map].filter(([key, value]) => key != id));
   }

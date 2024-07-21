@@ -7,6 +7,7 @@ const GetOrder=require("./DataStructures").GetOrder
 const Hotel = require("../models/Hotel");
 const Carts = require("../models/Cart");
 const User = require("../models/client");
+
 function OrderConfirm(socket, io){
 socket.on(
     "OrderConfirmationFromHotel",
@@ -44,6 +45,7 @@ console.log(orderTimeDifference)
                 HotelDeliveryConfirmation:false,
                 UserDeliveryConfirmation:false,
                 OwnerId: Order[0][1],
+                DeliveryId : Math.floor(Math.random()*100000000)
               };
 
               const NewActiveOrder = new Activeorders(ActOrder);

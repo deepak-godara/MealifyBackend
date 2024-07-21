@@ -24,7 +24,8 @@ const saveOrderStatus = asyncHandler(async (req, res) => {
         if(!order){
             return  res.status(404).json({message:'order not found   saveorderSatus request'})
         }
-        order.OrderStatus= status;
+        if(status === 'deliveryConfirmByUser') order.UserDeliveryConfirmation = true;
+        else  order.Status = status;
         await order.save();
         res.status(200).json({ message :"order status is updated successfully "})
     } catch (error) {
