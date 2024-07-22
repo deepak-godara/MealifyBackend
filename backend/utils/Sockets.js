@@ -2,81 +2,106 @@ const Hotel = require("../models/Hotel");
 const Carts = require("../models/Cart");
 const User = require("../models/client");
 const Activeorders = require("../models/ActiveOrder");
+// const Hotel  = require('../models/Hotel')
 const { OwnerFind, UsersFind } = require("./DataStructures");
 function SocketsFunctions(socket, io) {
 
   socket.on("statusUpdateMessage", async ({ status, ownerId, userId, orderId }) => {
-    const activeUserId = UsersFind(userId.toString());
+    const activeUserId =  await  UsersFind(userId.toString());
+    console.log("Received statusUpdateMessage event for userId:", userId);
+    console.log("activeUserId:", activeUserId);
   
     try {
-      console.log("Status change from user side is:", activeUserId);
+      const order = await Activeorders.findById(orderId);
       if (activeUserId) {
         try {
-          const order = await Activeorders.findById(orderId);
           if (!order) {
             console.log("Order not found in active orders in socket.js");
           } else {
             await order.addStatus(status);
             order.OrderStatus = status;
             await order.save();
+            console.log("Order status updated successfully");
           }
         } catch (error) {
           console.error("Error finding active order or updating status:", error);
         }
   
+        console.log("changeStatusUserside event to activeUserId:", activeUserId);
         io.to(activeUserId).emit("changeStatusUserside", {
           status,
           ownerId,
           userId,
           orderId,
+          Name:order.HotelName,
         });
         console.log("Status change has been sent by owner to user.");
       } else {
         console.error(`User with ID ${userId} not found in ActiveUsers.`);
       }
     } catch (outerError) {
-      console.error("Error in statusUpdateMessage handler:", outerError);
+      console.error("Error in statusUpdateMessage handler or in finding user :", outerError);
     }
   });
+  
   
 
   socket.on(
     "deliveryConfirmationByUser",
-    async ({ orderId, ownerId, userId, status }) => {
-      console.log("ownerId  ", ownerId);
-      const Ownerid = OwnerFind(ownerId.toString())
-      console.log(" wertyuiopoiujhgfdghjk")
-      try {
-        if (Ownerid) {
+    async ({ orderId, HotelId, userId, status }) => {
+      console.log("ownerId  ", HotelId);
+      
+      // try {
+        // const Ownerid = await OwnerFind(ownerId.toString());
+        // console.log("Ownerid: ", Ownerid);
+        // if (Ownerid) {
           try {
             const order = await Activeorders.findById(orderId);
-            if (!order) {
-              console.log("Order not found in active orders in socket.js");
+            const hotel =  await Hotel.findById(HotelId);
+            const client =  await User.findById(userId);
+            console.log("ewrtybunijmk" , userId)
+            console.log("ewrtybunijmk" , client._id)
+            if (!order || !hotel || !client) {
+              console.log("hotel or client || Order not found in active orders in socket.js");
             } else {
-              await order.addStatus(status);
-              order.OrderStatus = status;
-              await order.save();
-              console.log("Order delivered");
+              const Ownerid = await OwnerFind(hotel.Id);
+              const  UserId = await UsersFind(userId);
+              console.log("Ownerid: ", Ownerid);
+              console.log("userId: ", UserId);
+              if (Ownerid && UserId) {
+              if (order.UserDeliveryConfirmation && order.HotelDeliveryConfirmation) {
+                await order.addStatus(status);
+                order.OrderStatus = status;
+                await order.save();
+                console.log("Order delivered");       
+                io.to(String(Ownerid)).emit("DeliveryConfirmed", {
+                  orderId: orderId,
+                  status: status,
+                  Name :client.UserName,
+                });
+                io.to(String(UserId)).emit("DeliveryConfirmed", {
+                  orderId: orderId,
+                  status: status,
+                  HotelName :hotel.Name,
+                });
+                console.log("Order delivery confirmed by user");
+              }
+            }
             }
           } catch (error) {
             console.error("Error finding active order or updating status:", error);
           }
-  
-          io.to(Ownerid).emit("DeliveryConfirmed", {
-            orderId: orderId,
-            status: status,
-          });
-          console.log("Order delivery confirmed by user");
-        } else {
-          console.error(`Owner with ID ${ownerId} not found in ActiveOwners.`);
-        }
-      } catch (Error) {
-        console.error("Error in deliveryConfirmationByUser handler:", Error);
-      }
+        // } else {
+        //   console.error(`Owner with ID ${ownerId} not found in ActiveOwners.`);
+        // }
+      // } catch (error) {
+      //   console.error("Error in deliveryConfirmationByUser handler:", error);
+      // }
     }
   );
   
-  socket.on("requestForDeliveryConfirmationByOwner", async ({ UserId, OwnerId, OrderId }) => {
+  
+  socket.on("requestForDeliveryConformationbyOwner", async ({ UserId, OwnerId, OrderId }) => {
     try {
       const userId = await UsersFind(UserId);
       const ownerId = await OwnerFind(OwnerId);  
@@ -92,7 +117,8 @@ function SocketsFunctions(socket, io) {
       }
       order.HotelDeliveryConfirmation = true;
       await order.save();
-      io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
+      io.emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
+      // io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
       console.log("Confirmation sent by owner to user for delivery");
     } catch (error) {
       console.log("Error occurred in finding active user or processing order: ", error);
