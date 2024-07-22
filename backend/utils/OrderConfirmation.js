@@ -47,8 +47,6 @@ console.log(orderTimeDifference)
               };
 
               const NewActiveOrder = new Activeorders(ActOrder);
-              let OrderIds;
-
               try {
                 const savedOrder = await NewActiveOrder.save();
                 OrderIds = savedOrder._id;

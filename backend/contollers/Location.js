@@ -203,7 +203,12 @@ exports.getLocationForCoordinates = async (req, res, next) => {
           foreignField: "_id",
           as: "Hotels",
         });
-        console.log(locations[0].Hotels);
+        console.log(locations[0]);
+        if(!locations)
+        {
+          res.json({status:"200",HotelData:[]});
+          return ;
+        }
         const locs = await UpdateValue(locations);
         let locas2 = [];
         for (let i = 0; i < locs.length; i++) {

@@ -1,7 +1,7 @@
 const { default: mongoose } = require("mongoose");
 const Mongoose = require("mongoose");
 const Schema = Mongoose.Schema;
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 } = require("uuid");
 const OrderdSchema = new Schema({
   OrderNumber: {
     type: Schema.Types.ObjectId,
@@ -9,7 +9,7 @@ const OrderdSchema = new Schema({
   },
 });
 const AddressesSchema = new Schema({
-  Aid:{
+  Aid: {
     type: String,
     unique: true,
     default: uuidv4,
@@ -65,18 +65,15 @@ const ClientSchema = new Schema({
   Gender: {
     type: String,
   },
-  ForeGroundImage:{
-    type:String
+  ForeGroundImage: {
+    type: String,
   },
-  BackGroundImage:{
-    type:String
+  BackGroundImage: {
+    type: String,
   },
   Address: [AddressesSchema],
-  CurrentActiveAddress: {
-    AddressesSchema,
-    
-  },
-  
+  CurrentActiveAddress: 
+    AddressesSchema
 });
 // ClientSchema.methods.AddOrder = async function (OrderNumber) {
 //   this.Orders.Push({ OrderNumber: OrderNumber });
@@ -92,7 +89,6 @@ ClientSchema.methods.UpdateProfile = async function (Data) {
   return this.save();
 };
 ClientSchema.methods.Addaddress = async function (Data) {
-
   let address;
   if (this.Address.length === 0) {
     address = [];
@@ -109,27 +105,29 @@ ClientSchema.methods.Addaddress = async function (Data) {
   this.Address = address;
   return this.save();
 };
-ClientSchema.methods.AddFaceImage=async function (id){
-  this.ForeGroundImage=id;
+ClientSchema.methods.AddFaceImage = async function (id) {
+  this.ForeGroundImage = id;
   return this.save();
-}
-ClientSchema.methods.AddBackImage=async function(id){
-  this.BackGroundImage=id;
+};
+ClientSchema.methods.AddBackImage = async function (id) {
+  this.BackGroundImage = id;
   return this.save();
-}
-ClientSchema.methods.EditProfile=async function(Data){
-  if(Data.Gender)
-  this.Gender=Data.Gender;
-  if(Data.DOB)
-  this.DOB=Data.DOB;
-  if(Data.PhoneNo)
-  this.PhoneNo=Data.PhoneNo;
-if(Data.UserName)
-this.UserName=Data.UserName;
-return this.save();
-}
-ClientSchema.methods.AddOrder=async function(OrderId){
+};
+ClientSchema.methods.UpdateDefaultAddress = async function (Aid) {
+  let arr = this.Address.filter((key, index) => key.Aid == Aid);
+  console.log(arr)
+  this.CurrentActiveAddress = arr[0];
+  return this.save();
+};
+ClientSchema.methods.EditProfile = async function (Data) {
+  if (Data.Gender) this.Gender = Data.Gender;
+  if (Data.DOB) this.DOB = Data.DOB;
+  if (Data.PhoneNo) this.PhoneNo = Data.PhoneNo;
+  if (Data.UserName) this.UserName = Data.UserName;
+  return this.save();
+};
+ClientSchema.methods.AddOrder = async function (OrderId) {
   this.Orders.unshift({ OrderNumber: OrderId });
   return this.save();
-}
+};
 module.exports = mongoose.model("client", ClientSchema);

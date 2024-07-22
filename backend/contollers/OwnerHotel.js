@@ -6,14 +6,16 @@ const reviews = require("../models/Review");
 const Location = require("../models/Location");
 
 const MAPBOX_API_URL = "https://api.mapbox.com/boundaries/v4/mapbox/places";
-const MAPBOX_ACCESS_TOKEN =
-  "pk.eyJ1IjoiZGVlcGFrZ29kYXJhIiwiYSI6ImNsbGh0ZWhldDAycjEzcG5xbmZ2Y3NtcTgifQ.YH0ASk4DJRM5kuTK2FCYxQ";
+const MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiZGVlcGFrZ29kYXJhIiwiYSI6ImNsbGh0ZWhldDAycjEzcG5xbmZ2Y3NtcTgifQ.YH0ASk4DJRM5kuTK2FCYxQ";
 const API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
 
 exports.OwnergetHotel = async (req, res, next) => {
   try {
     const id = req.params.id;
-    const products = await Hotel.find({ Id: id });
+    if (!id) {
+      return res.status(400).json({ message: "Id parameter is required" });
+    }
+    const products = await Hotel.find({ Id: id});
     res.json({
       status: "200",
       hotels: products,
@@ -32,6 +34,7 @@ exports.OwnerAddHotel = async (req, res, next) => {
     const Data = req.body.HotelData;
     const OwnerId = req.params.id;
 
+    console.log("AddHotel "+OwnerId)
     // Upload image to Cloudinary
     const image = await cloudinary.uploader.upload(Data.Image, {
       upload_preset: "Mealify_Hotel_Images",

@@ -7,5 +7,6 @@ router.post('/owner/login',addOwnerController.getLogined);
 router.post('/owner/signup',addOwnerController.postLogin);
 router.get('/owner/:id/gethotel',addhotelController.OwnergetHotel);
 router.post('/owner/:id/addhotel', addhotelController.OwnerAddHotel);
+router.get("/owner/:Id/getowner",addOwnerController.GetOwner)
 router.get('/owner/:id/:hotelid',addhotelController.getOwnerHotel)
 module.exports=router;

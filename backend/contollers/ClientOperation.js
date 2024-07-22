@@ -12,7 +12,14 @@ exports.AddAddress = async (req, res, next) => {
     const Address = req.body.Address;
     const client = await Client.findOne({ _id: id });
     await client.Addaddress(Address);
-    res.status(200).json({ message: "Address added successfully" });
+    console.log(client.Address)
+    if(client.Address.length==1)
+    {
+      console.log("Address is 1 length")
+    client.CurrentActiveAddress=client.Address[0];
+    await client.save();
+    }
+    res.status(200).json({ message: "Address added successfully", Address:client});
   } catch (err) {
     console.error("Error in adding address:", err);
     res.status(202).json({ message: "Error in adding address" });
@@ -30,7 +37,7 @@ exports.AddForeImage = async (req, res, next) => {
     });
     const url = image.url;
     const client = await Client.findOne({ _id: id });
-    await client.AddForeImage(url);
+    await client.AddFaceImage(url);
     res.status(200).json({ message: "Foreground image added successfully" });
   } catch (err) {
     console.error("Error in adding foreground image:", err);

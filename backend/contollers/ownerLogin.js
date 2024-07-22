@@ -52,3 +52,23 @@ exports.getLogined = async (req, res, next) => {
         res.status(500).json({ status: '500', message: 'Failed to log in' });
     }
 };
+
+exports.GetOwner=async(req,res,next)=>{
+    try{
+    const Id=req.params.Id;
+    console.log(Id)
+    const Owner= await OwnerLogin.findOne({_id:Id});
+    if(Owner)
+    {
+        res.status(200).json({message:"owner found",Data:Owner});
+    }
+    else
+    {
+        res.status(500).json({message:"owner not found"});
+    }
+}
+catch(err){
+    res.status(500).json({message:"erro in finding found"});
+}
+
+}
