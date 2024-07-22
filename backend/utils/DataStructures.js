@@ -5,6 +5,7 @@ let NewOrder = new Map();
 let OwnerOrderMap = new Map();
 let OrderCount = 0;
 const OwnerFind=async (hotelId)=>{
+    console.log(" active owners is : " , ActiveOwners);
     if(ActiveOwners.has(hotelId.toString()))
     {
         return  ActiveOwners.get(hotelId.toString());
@@ -13,6 +14,7 @@ const OwnerFind=async (hotelId)=>{
     return null;
 }
 const UsersFind=async (hotelId)=>{
+    console.log(" active users is : " , ActiveUsers);
     if(ActiveUsers.has(hotelId.toString()))
     {
         return  ActiveUsers.get(hotelId.toString());
@@ -21,7 +23,7 @@ const UsersFind=async (hotelId)=>{
     return null;
 }
 const AddUser=async(UserId,Data)=>{
-    console.log("dsisn")
+    console.log("dsisn") 
     console.log(ActiveOwners)
     console.log(ActiveUsers);
     return ActiveUsers.set(UserId,Data);
@@ -31,6 +33,7 @@ const AddOwner=async(UserId,Data)=>{
     console.log(ActiveOwners)
     console.log(ActiveUsers);
     return ActiveOwners.set(UserId,Data);
+    
 }
  const UserFilter=async(Id)=>{
     // ActiveUsers.delete(Id)

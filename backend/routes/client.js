@@ -17,5 +17,5 @@ router.route("/:Cid/address").get(getAddress);
 router.route("/:Cid/:Aid/address/delete").get(deleteAddress)
 router.post("/:Cid/updatecurrentaddress",SetDefaultAddress)
 router.route("/owner/ActiveOrders").get(getActiveOrders);
-router.route('/owner/ActiveOrders/statusUpdate').put(saveOrderStatus)
+router.route('/owner/ActiveOrders/statusUpdate').put(saveOrderStatus);
 module.exports=router

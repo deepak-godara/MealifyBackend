@@ -18,17 +18,21 @@ const getActiveOrders = asyncHandler(async(req, res) =>{
 })
 
 const saveOrderStatus = asyncHandler(async (req, res) => {
-    const { orderId , status} = req.body;
+    const { orderId, status } = req.body;
     try {
-        const order = await Activeorder.findOne({OrderId:orderId});
-        if(!order){
-            return  res.status(404).json({message:'order not found   saveorderSatus request'})
+        const order = await Activeorder.findById(orderId);
+        if (!order) {
+            return res.status(404).json({ message: 'Order not found in saveOrderStatus request' });
         }
-        order.OrderStatus= status;
-        await order.save();
-        res.status(200).json({ message :"order status is updated successfully "})
+        if (status === 'deliveryConfirmByUser') {
+            order.UserDeliveryConfirmation = true;
+        } else {
+            order.OrderStatus = status; 
+        }
+        await order.save(); 
+        res.status(200).json({ message: 'Order status is updated successfully', order });
     } catch (error) {
-        return res.status(404).json(error);
+        return res.status(500).json({ message: error.message }); 
     }
 });
 

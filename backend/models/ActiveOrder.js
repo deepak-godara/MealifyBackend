@@ -101,7 +101,11 @@ const ActiveOrderSchema = new Schema({
   },
   Status: {
     type: [String],
-    default: ["Accepted"]
+    default: ["Accpeted"]
+  },
+  DeliveryId:{
+    type:Number,
+    default:""
   }
 });
 
