@@ -16,5 +16,5 @@ router.get("/:orderid/getorderdetails",ClientOperationController.Getorderdetails
 router.route("/:Cid/address").get(getAddress);
 router.route("/:Cid/:Aid/address/delete").get(deleteAddress)
 router.route("/owner/ActiveOrders").get(getActiveOrders);
-router.route('/owner/ActiveOrders/statusUpdate').put(saveOrderStatus)
+router.route('/owner/ActiveOrders/statusUpdate').put(saveOrderStatus);
 module.exports=router
