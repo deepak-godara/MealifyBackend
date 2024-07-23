@@ -8,6 +8,10 @@ const Hotel = require("../models/Hotel");
 const Carts = require("../models/Cart");
 const User = require("../models/client");
 
+// ye function call kardena impor karke ;
+// sendEmail({toemail:user.Email ,  Status:status, Hname:order.HotelName , Uname:user.UserName , OrderId:orderId});
+
+
 function OrderConfirm(socket, io){
 socket.on(
     "OrderConfirmationFromHotel",
@@ -78,7 +82,7 @@ console.log(orderTimeDifference)
               }
             }
           }
-        } else {
+        } else {  
           console.log("Order received late");
           await DeleteOrder(orderid);
           await NewOrders.deleteOne({ OrderId: orderid });
