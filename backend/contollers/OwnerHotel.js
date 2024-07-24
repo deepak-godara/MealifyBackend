@@ -6,7 +6,8 @@ const reviews = require("../models/Review");
 const Location = require("../models/Location");
 
 const MAPBOX_API_URL = "https://api.mapbox.com/boundaries/v4/mapbox/places";
-const MAPBOX_ACCESS_TOKEN = "pk.eyJ1IjoiZGVlcGFrZ29kYXJhIiwiYSI6ImNsbGh0ZWhldDAycjEzcG5xbmZ2Y3NtcTgifQ.YH0ASk4DJRM5kuTK2FCYxQ";
+const MAPBOX_ACCESS_TOKEN =
+  "pk.eyJ1IjoiZGVlcGFrZ29kYXJhIiwiYSI6ImNsbGh0ZWhldDAycjEzcG5xbmZ2Y3NtcTgifQ.YH0ASk4DJRM5kuTK2FCYxQ";
 const API_KEY = "YOUR_GOOGLE_MAPS_API_KEY";
 
 exports.OwnergetHotel = async (req, res, next) => {
@@ -15,7 +16,7 @@ exports.OwnergetHotel = async (req, res, next) => {
     if (!id) {
       return res.status(400).json({ message: "Id parameter is required" });
     }
-    const products = await Hotel.find({ Id: id});
+    const products = await Hotel.find({ Id: id });
     res.json({
       status: "200",
       hotels: products,
@@ -34,7 +35,7 @@ exports.OwnerAddHotel = async (req, res, next) => {
     const Data = req.body.HotelData;
     const OwnerId = req.params.id;
 
-    console.log("AddHotel "+OwnerId)
+    console.log("AddHotel " + OwnerId);
     // Upload image to Cloudinary
     const image = await cloudinary.uploader.upload(Data.Image, {
       upload_preset: "Mealify_Hotel_Images",
@@ -68,25 +69,24 @@ exports.OwnerAddHotel = async (req, res, next) => {
       Menu: [],
     });
     await menu.save();
-
-    // Create new Reviews document
-    const review = new reviews({
-      Id: hotelId,
-      Rating: 0,
-      Count: 0,
-      Review: [],
-    });
-    await review.save();
-
-    // Update Location document
     let locations = await Location.findOne({ Location: Data.City });
     if (!locations) {
       locations = new Location({
         Location: Data.City,
-        Hotels: [{ HotelId: hotelId, Longitude: Data.Coordinates.lng, Latitude: Data.Coordinates.lat }],
+        Hotels: [
+          {
+            HotelId: hotelId,
+            Longitude: Data.Coordinates.lng,
+            Latitude: Data.Coordinates.lat,
+          },
+        ],
       });
     } else {
-      locations.Hotels.push({ HotelId: hotelId, Longitude: Data.Coordinates.lng, Latitude: Data.Coordinates.lat });
+      locations.Hotels.push({
+        HotelId: hotelId,
+        Longitude: Data.Coordinates.lng,
+        Latitude: Data.Coordinates.lat,
+      });
     }
     await locations.save();
 
@@ -116,6 +116,11 @@ exports.getOwnerHotel = async (req, res, next) => {
     res.json({ status: "200", hotel: hotel });
   } catch (err) {
     console.error("Error fetching owner's hotel:", err);
-    res.status(500).json({ status: "500", message: "Failed to get the details of the hotel" });
+    res
+      .status(500)
+      .json({
+        status: "500",
+        message: "Failed to get the details of the hotel",
+      });
   }
 };

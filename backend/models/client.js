@@ -73,7 +73,12 @@ const ClientSchema = new Schema({
   },
   Address: [AddressesSchema],
   CurrentActiveAddress: 
-    AddressesSchema
+    AddressesSchema,
+  ReviewCount:{
+    type:Number,
+    required:true
+  }
+  
 });
 // ClientSchema.methods.AddOrder = async function (OrderNumber) {
 //   this.Orders.Push({ OrderNumber: OrderNumber });
@@ -130,4 +135,8 @@ ClientSchema.methods.AddOrder = async function (OrderId) {
   this.Orders.unshift({ OrderNumber: OrderId });
   return this.save();
 };
+ClientSchema.methods.AddReviews=async function(){
+  this.ReviewCount+=1;
+  return this.save();
+}
 module.exports = mongoose.model("client", ClientSchema);

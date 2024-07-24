@@ -1,7 +1,9 @@
-// const { default: mongoose } = require('mongoose');
-const { Decimal128, Double } = require("mongodb");
-const Mongoose = require("mongoose");
-const Schema = Mongoose.Schema;
+const mongoose = require("mongoose");
+// require('mongoose-double')(mongoose);
+
+const { Schema } = mongoose;
+const SchemaTypes = mongoose.Schema.Types;
+
 const HotelSchema = new Schema({
   Name: {
     type: String,
@@ -26,8 +28,9 @@ const HotelSchema = new Schema({
     // required: true,
   },
   Rating: {
-    type: Mongoose.Schema.Types.Decimal128,
+    type: SchemaTypes.Decimal128,
     required: true,
+    default: mongoose.Types.Decimal128.fromString('0.0'),
   },
   Category: [
     {
@@ -39,17 +42,40 @@ const HotelSchema = new Schema({
     ref: "owner",
     required: true,
   },
+  ReviewCount: {
+    type: Number,
+    required: true,
+    default: 0,
+  }
 });
 
 HotelSchema.methods.addCategory = async function (category) {
   const Categories = [...this.Category];
-  const index = await this.Category.findIndex((item) => {
-    return item === category;
-  });
+  const index = this.Category.findIndex((item) => item === category);
   if (index === -1) {
     Categories.push(category);
   }
   this.Category = Categories;
   return this.save();
 };
-module.exports = Mongoose.model("hotel", HotelSchema);
+
+HotelSchema.methods.addReview = async function (Rating) {
+  try {
+    console.log("Ass")
+    const currentRating = parseFloat(this.Rating.toString());
+    const newRating = parseFloat(Rating.toString());
+    const newReviewCount = this.ReviewCount + 1;
+
+    const newTotalRating = (currentRating * this.ReviewCount + newRating) / newReviewCount;
+
+    this.Rating = mongoose.Types.Decimal128.fromString(newTotalRating.toString());
+    this.ReviewCount = newReviewCount;
+
+    return this.save();
+  } catch (error) {
+    console.log(error)
+    throw new Error('Error updating rating: ' + error.message);
+  }
+};
+
+module.exports = mongoose.model("Hotel", HotelSchema);

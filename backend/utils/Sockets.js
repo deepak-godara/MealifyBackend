@@ -82,6 +82,8 @@ function SocketsFunctions(socket, io) {
                 io.to(String(UserId)).emit("DeliveryConfirmed", {
                   orderId: orderId,
                   status: status,
+                  HotelId:hotel._id,
+                  ClientId:client._id,
                   HotelName :hotel.Name,
                 });
                 console.log("Order delivery confirmed by user");
@@ -117,8 +119,8 @@ function SocketsFunctions(socket, io) {
       }
       order.HotelDeliveryConfirmation = true;
       await order.save();
-      io.emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
-      // io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
+      // io.emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
+      io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
       console.log("Confirmation sent by owner to user for delivery");
     } catch (error) {
       console.log("Error occurred in finding active user or processing order: ", error);

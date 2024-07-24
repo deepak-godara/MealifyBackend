@@ -5,6 +5,7 @@ exports.getCart = async (req, res, next) => {
   try {
     const id = req.params.client;
     const cart = await Cart.findOne({ UserId: id });
+    console.log(Cart)
     res.json({ status: "200", Cart: cart });
   } catch (err) {
     res.json({

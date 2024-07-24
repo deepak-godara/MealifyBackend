@@ -1,13 +1,14 @@
 const addHotel = require("../models/Hotel");
 const NewOrder = require("../models/NewOrder");
-const ActvieOrder=require("../models/ActiveOrder")
+const geolib = require("geolib");
+const ActvieOrder = require("../models/ActiveOrder");
 const { cloudinary } = require("../utils/cloudniary");
 const ActiveOrder = require("../models/ActiveOrder");
 
 exports.getHotel = async (req, res, next) => {
   try {
     const { HotelData, name, price, description } = req.body;
-    
+
     const image = await cloudinary.uploader.upload(HotelData.Image, {
       upload_preset: "Mealify_Hotel_Images",
     });
@@ -55,17 +56,44 @@ exports.getNewOrders = async (req, res, next) => {
     res.json({ status: "200", Orders: orders });
   } catch (err) {
     console.error("Error fetching new orders:", err);
-    res.status(500).json({ status: "201", message: "Error fetching new orders" });
+    res
+      .status(500)
+      .json({ status: "201", message: "Error fetching new orders" });
   }
 };
-exports.getActiveOrders=async(req,res,next)=>{
-  try{
-    const hotelid=req.params.hotelid;
-    const orders=await  ActiveOrder.find({HotelId:hotelid}).exec();
-    res.status(200).json({Orders:orders});
-  }
-  catch (err) {
+exports.getActiveOrders = async (req, res, next) => {
+  try {
+    const hotelid = req.params.hotelid;
+    const orders = await ActiveOrder.find({ HotelId: hotelid }).exec();
+    res.status(200).json({ Orders: orders });
+  } catch (err) {
     console.error("Error fetching new orders:", err);
-    res.status(500).json({ status: "201", message: "Error fetching new orders" });
+    res
+      .status(500)
+      .json({ status: "201", message: "Error fetching new orders" });
   }
-}
+};
+exports.getDistances = async (req, res, next) => {
+  try {
+    console.log("hii");
+    const hotelid = req.params.hotelid;
+    const Latitude = req.query.Latitude;
+    const Longitude = req.query.Longitude;
+    console.log(Latitude + Longitude);
+    const hotel = await addHotel.findById(hotelid);
+    console.log(hotel);
+    if (hotel) {
+      const Dist = geolib.getDistance(
+        { latitude: Latitude, longitude: Longitude },
+        {
+          latitude: hotel.Coordinates.Latitude,
+          longitude: hotel.Coordinates.Longitude,
+        }
+      );
+      console.log(Dist + " dist");
+      res.status(200).json({ message: "got the distance", Distance: Dist });
+    } else res.status(401).json({ message: "Cannot found hotel" });
+  } catch (err) {
+    res.status(500).json({ message: "Error while fetching data" });
+  }
+};
