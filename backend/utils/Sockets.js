@@ -2,6 +2,7 @@ const Hotel = require("../models/Hotel");
 const Carts = require("../models/Cart");
 const User = require("../models/client");
 const Activeorders = require("../models/ActiveOrder");
+const{sendEmail} = require('./SendMail')
 // const Hotel  = require('../models/Hotel')
 const { OwnerFind, UsersFind } = require("./DataStructures");
 function SocketsFunctions(socket, io) {
@@ -13,16 +14,19 @@ function SocketsFunctions(socket, io) {
   
     try {
       const order = await Activeorders.findById(orderId);
+      const user = await User.findById(userId);
       if (activeUserId) {
         try {
-          if (!order) {
+          if (!order || !user) {
             console.log("Order not found in active orders in socket.js");
           } else {
             await order.addStatus(status);
             order.OrderStatus = status;
             await order.save();
-            console.log("Order status updated successfully");
+            sendEmail({toemail:user.Email ,  Status:status, Hname:order.HotelName , Uname:user.UserName , OrderId:orderId});
+            console.log("Order status updated successfully and Email");
           }
+
         } catch (error) {
           console.error("Error finding active order or updating status:", error);
         }
@@ -73,6 +77,7 @@ function SocketsFunctions(socket, io) {
                 await order.addStatus(status);
                 order.OrderStatus = status;
                 await order.save();
+                sendEmail({toemail:client.Email ,  Status:status, Hname:order.HotelName , Uname:client.UserName , OrderId:orderId});
                 console.log("Order delivered");       
                 io.to(String(Ownerid)).emit("DeliveryConfirmed", {
                   orderId: orderId,
@@ -118,7 +123,7 @@ function SocketsFunctions(socket, io) {
       order.HotelDeliveryConfirmation = true;
       await order.save();
       io.emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
-      // io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
+      io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
       console.log("Confirmation sent by owner to user for delivery");
     } catch (error) {
       console.log("Error occurred in finding active user or processing order: ", error);
