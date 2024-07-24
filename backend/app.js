@@ -16,7 +16,7 @@ const AddOrder=require("./utils/NewOrder").AddOrder
 const OrderConfirmation=require("./utils/OrderConfirmation").OrderConfirm
 const Initiate=require("./utils/DataStructures").Initiate
 const app = express();
-
+const {sendEmail}  = require('./utils/SendMail')
 // Middleware for parsing JSON data
 app.use(express.json({ limit: "50mb" }));
 app.use(cors());
@@ -46,6 +46,7 @@ mongoose
     console.log(err);
   });
 
+// sendEmail({toemail:'anusinghbisen15@gmail.com' ,  Status:'delivered' , Hname:"president Hotel" , Uname:"Anurag  Singh Bsien" , OrderId:"fiuekbiufgewfui23456yhjvshdjh"});
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "*");
