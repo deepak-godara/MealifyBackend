@@ -78,4 +78,4 @@ HotelSchema.methods.addReview = async function (Rating) {
   }
 };
 
-module.exports = mongoose.model("Hotel", HotelSchema);
+module.exports = mongoose.model("hotel", HotelSchema);

@@ -23,6 +23,12 @@ const ReviewSchema=new Schema({
         {
         type:String,
         required:true}
+        ,
+        Date: {
+            type: Date,
+            default: Date.now,
+            required: true
+          }
 })
 ReviewSchema.index( {
     HotelId: 1,
