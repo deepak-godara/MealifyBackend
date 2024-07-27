@@ -28,15 +28,15 @@ console.log(orderTimeDifference)
             const socketId= await UserFind(Order[0][0])
             if (socketId) {
               if (code === 0) {
-                io.to(socketId).emit("OrderConfirmationByHotel", {
-                  message: "Order Rejected by Hotel",
-                  code: "202",
+                io.to(socketId).emit("Notification", {
+                  Message: "Order Rejected by Hotel",
+                  Id: 0,
                 });
                 await NewOrders.deleteOne({ OrderId: orderid });
               } else {
-                io.to(socketId).emit("OrderConfirmationByHotel", {
-                  message: "Order Accepted by Hotel",
-                  code: "200",
+                io.to(socketId).emit("Notification", {
+                  Message: "Order Accepted by Hotel",
+                  Id:0,
                 });
               }
             }

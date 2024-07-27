@@ -78,6 +78,10 @@ function AddOrders(socket,io){
                 }
               }
             );
+            io.to(ids).emit(
+              "Notification",
+              {Message:"New Order Received",Id:1}
+            )
           } else {
             socket.emit("OrderConfirmation", {
               message: "Can't place your order as hotel has turned off new orders",

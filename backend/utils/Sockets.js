@@ -39,6 +39,11 @@ function SocketsFunctions(socket, io) {
           orderId,
           Name:order.HotelName,
         });
+        let mes=`your order is ${status}`;
+        io.to(activeUserId).emit("Notification", {
+         Message:mes,
+         Id:0
+        });
         console.log("Status change has been sent by owner to user.");
       } else {
         console.error(`User with ID ${userId} not found in ActiveUsers.`);
@@ -78,12 +83,17 @@ function SocketsFunctions(socket, io) {
                 order.OrderStatus = status;
                 await order.save();
                 sendEmail({toemail:client.Email ,  Status:status, Hname:order.HotelName , Uname:client.UserName , OrderId:orderId});
-                console.log("Order delivered");       
+                console.log("Order delivered");  
+                let mes=`your order is ${status}`;     
                 io.to(String(Ownerid)).emit("DeliveryConfirmed", {
                   orderId: orderId,
                   status: status,
                   Name :client.UserName,
                 });
+                io.to(String(Ownerid)).emit("Notification",{
+                  Message:mes,
+                  Id:3,
+                })
                 io.to(String(UserId)).emit("DeliveryConfirmed", {
                   orderId: orderId,
                   status: status,
@@ -91,6 +101,10 @@ function SocketsFunctions(socket, io) {
                   ClientId:client._id,
                   HotelName :hotel.Name,
                 });
+                io.to(String(UserId)).emit("Notification",{
+                  Message:mes,
+                  Id:0,
+                })
                 console.log("Order delivery confirmed by user");
               }
             }
@@ -124,8 +138,12 @@ function SocketsFunctions(socket, io) {
       }
       order.HotelDeliveryConfirmation = true;
       await order.save();
-      io.emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
+      // io.emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
       io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
+      io.to(userId).emit("Notification",{
+        Message:"Confirm the dleivery of your Order",
+        Id:0
+      })
       console.log("Confirmation sent by owner to user for delivery");
     } catch (error) {
       console.log("Error occurred in finding active user or processing order: ", error);
