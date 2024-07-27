@@ -126,6 +126,7 @@ function SocketsFunctions(socket, io) {
     try {
       const userId = await UsersFind(UserId);
       const ownerId = await OwnerFind(OwnerId);  
+      console.log("User  id  found", UserId);
       if (!userId) {
         console.log("User not found");
         return;
@@ -136,7 +137,7 @@ function SocketsFunctions(socket, io) {
         console.log("Order not found");
         return;
       }
-      order.HotelDeliveryConfirmation = true;
+      order.HotelDeliveryConfirmation = true;  
       await order.save();
       // io.emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });
       io.to(userId).emit('deliveryConfirmationRequestOwner', { UserId: UserId, OwnerId: OwnerId, OrderId: OrderId });

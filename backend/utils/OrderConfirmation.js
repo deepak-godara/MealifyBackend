@@ -8,7 +8,7 @@ const Hotel = require("../models/Hotel");
 const Carts = require("../models/Cart");
 const User = require("../models/client");
 
-// ye function call kardena impor karke ;
+// ye function call kardena import karke ;
 // sendEmail({toemail:user.Email ,  Status:status, Hname:order.HotelName , Uname:user.UserName , OrderId:orderId});
 
 
