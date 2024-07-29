@@ -8,6 +8,6 @@ const router=express.Router();
 router.get('/gethomepage',addLocationController.getAllLocation);
 // router.get('/gethotels/',addLocationController.getHotelForLocationName);
 router.post('/gethotels/:locationname',addLocationController.getLocationForCoordinates);
-router.post('/gethotel/getdishes',addLocationController.getDishes)
+router.get('/:locationname/getdishes',addLocationController.getDishes)
 router.get('/gethotels/:locationame')
 module.exports=router;

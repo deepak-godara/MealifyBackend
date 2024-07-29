@@ -15,7 +15,9 @@ const UpdateValue = async (data) => {
       arr.push({
         _id: data[i]._id,
         Location: data[i].Location,
-        Hotels: data[i].Hotels[0].HotelId?data[i].Hotels[0].HotelId:data[i].Hotels[0]._id,
+        Hotels: data[i].Hotels[0].HotelId
+          ? data[i].Hotels[0].HotelId
+          : data[i].Hotels[0]._id,
       });
     }
     return arr;
@@ -75,22 +77,25 @@ const DifferentDishes = async (HotelData) => {
   try {
     const MenuItem = new Set();
     const CategoryItem = new Set();
-    const HotelList = [];
+    console.log(HotelData);
+    let HotelList = [];
+    HotelList = await Hotel.find(
+      { _id: { $in: HotelData } },
+      { Name: 1, _id: 1 }
+    );
 
-    for (let i = 0; i < HotelData.length; i++) {
-      HotelList.push({ Name: HotelData[i].Name, _id: HotelData[i]._id });
-      const MenuItems = await Menu.findOne({
-        Id: HotelData[i]._id,
-      });
-      if (MenuItems) {
-        MenuItems.Menu.forEach((menu) => {
-          CategoryItem.add(menu.Name);
-          menu.items.forEach((item) => {
-            MenuItem.add(item.Name);
-          });
+    const MenuItems = await Menu.find({ Id: { $in: HotelData } });
+    console.log(MenuItems);
+    for (let i = 0; i < MenuItems.length; i++) {
+      MenuItems[i].Menu.forEach((menu) => {
+        CategoryItem.add(menu.Name);
+        menu.items.forEach((item) => {
+          MenuItem.add(item.Name);
         });
-      }
+      });
     }
+    console.log(MenuItem);
+    console.log(CategoryItem);
     return {
       MenuList: Array.from(MenuItem),
       Category: Array.from(CategoryItem),
@@ -115,7 +120,10 @@ exports.getAllLocation = async (req, res, next) => {
 exports.getHotelForLocation = async (req, res, next) => {
   try {
     const id = req.params.locationid;
-    const location = await Location.findOne({ Location: id }).populate("Hotels.HotelId").lean().exec();
+    const location = await Location.findOne({ Location: id })
+      .populate("Hotels.HotelId")
+      .lean()
+      .exec();
     res.json({ status: "200", hotels: location.Hotels });
   } catch (err) {
     console.error("Error in getHotelForLocation:", err);
@@ -126,7 +134,12 @@ exports.getHotelForLocation = async (req, res, next) => {
 exports.getHotelForLocationName = async (req, res, next) => {
   try {
     const name = req.params.locationname;
-    const location = await Location.findOne({ Location: name }).populate("Hotels.HotelId").lean().exec();
+    const PageNumber = req.query.PageNumber;
+    const PageSize = req.query.PageSize;
+    const location = await Location.findOne({ Location: name })
+      .populate("Hotels.HotelId")
+      .lean()
+      .exec();
     const Hotels = location.Hotels.map((item) => ({
       _id: item.HotelId._id.toString(),
       Name: item.HotelId.Name,
@@ -140,10 +153,68 @@ exports.getHotelForLocationName = async (req, res, next) => {
     res.json({ status: "200", HotelData: Hotels });
   } catch (err) {
     console.error("Error in getHotelForLocationName:", err);
-    res.json({ status: "202", message: "Failed to get hotels for location name" });
+    res.json({
+      status: "202",
+      message: "Failed to get hotels for location name",
+    });
   }
 };
 
+exports.GetHotelsFromCoordinates = async (lat1, lng1) => {
+  try{
+  const response = await axios.get(
+    `https://api.mapbox.com/isochrone/v1/mapbox/driving/${lng1},${lat1}?contours_meters=15000&polygons=true&denoise=0.1&access_token=${MAPBOX_ACCESS_TOKEN}`
+  );
+  if (
+    response &&
+    response.data &&
+    response.data.features &&
+    response.data.features.length > 0
+  ) {
+    const Coordinates = response.data.features[0].geometry.coordinates;
+    const locations = await Location.aggregate([
+      {
+        $unwind: "$Hotels",
+      },
+      {
+        $match: {
+          "Hotels.Latitude": { $exists: true },
+          "Hotels.Longitude": { $exists: true },
+          Hotels: {
+            $geoWithin: {
+              $geometry: {
+                type: "Polygon",
+                coordinates: [Coordinates[0]],
+              },
+            },
+          },
+        },
+      },
+    ]).lookup({
+      from: "hotels",
+      localField: "Hotels.HotelId",
+      foreignField: "_id",
+      as: "Hotels",
+    });
+    if (!locations) {
+      res.json({ status: "200", HotelData: [] });
+      return;
+    }
+    const locs = await UpdateValue(locations);
+    let locas2 = [];
+    for (let i = 0; i < locs.length; i++) {
+      locas2.push(locs[i].Hotels);
+    }
+    HotelData = locas2;
+  }
+  // console.log(HotelData)
+  const hotelIds = HotelData.map((item) => item._id);
+  return hotelIds;
+}
+catch(err){
+   throw new Error("Error in Locating hotels")
+}
+};
 exports.getLocationForCoordinates = async (req, res, next) => {
   try {
     const address = req.params.locationname;
@@ -153,13 +224,100 @@ exports.getLocationForCoordinates = async (req, res, next) => {
     }
     const Dish = req.query.Dish;
     const Category = req.query.Category;
-    console.log(req.body.HotelData);
-    let HotelData = req.body.HotelData || [];
-    let MenuData = req.body.MenuItem || [];
-    let CategoryData = req.body.CategoryItem || [];
-    console.log(HotelData)
+    const PageNumber = req.query.PageNumber;
+    const PageSize = req.query.PageSize;
+    const loca = await axios.get(
+      `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+        address
+      )}&key=${API_KEY}`
+    );
+    const { status, results } = loca.data;
+    let lat1, lng1;
+    if (status === "OK" && results.length > 0) {
+      const { lat, lng } = results[0].geometry.location;
+      lat1 = lat;
+      lng1 = lng;
+    } else {
+      throw new Error("Could not fetch coordinates");
+    }
 
-    if ((!Dish && !Category)||HotelData==null||HotelData.length==0) {
+    const hotelIds = await this.GetHotelsFromCoordinates(lat1, lng1);
+
+    if (Dish) {
+      console.log("hii");
+      const menus = await Menu.distinct("Id", {
+        "Menu.items": {
+          $elemMatch: {
+            Name: Dish,
+          },
+        },
+      });
+      const hotelIdsSet = new Set(hotelIds.map((id) => id.toString()));
+
+      // Filter common IDs using the Set
+      const commonHotelIds = menus.filter((id) =>
+        hotelIdsSet.has(id.toString())
+      );
+
+      const Hotels = await Hotel.find({ _id: { $in: commonHotelIds } })
+        .skip(PageSize * PageNumber)
+        .limit(PageSize);
+      for (let i = 0; i < Hotels.length; i++) {
+        const imageUrl = cloudinary.url(Hotels[i].Image, { format: "jpg" });
+        Hotels[i].Image = imageUrl;
+      }
+      res.json({
+        status: "200",
+        HotelData: Hotels,
+      });
+    } else if (Category) {
+      const Categorys = await Menu.distinct("Id", { "Menu.Name": Category });
+      const hotelIdsSet = new Set(hotelIds.map((id) => id.toString()));
+
+      // Filter common IDs using the Set
+      const commonHotelIds = Categorys.filter((id) =>
+        hotelIdsSet.has(id.toString())
+      );
+      console.log(commonHotelIds);
+      const Hotels = await Hotel.find({ _id: { $in: commonHotelIds } });
+      res.json({
+        status: "200",
+        HotelData: Hotels,
+      });
+    } else {
+      if (hotelIds.length > 0) {
+        const result = await Hotel.find({ _id: { $in: hotelIds } })
+          .skip(PageSize * PageNumber)
+          .limit(PageSize);
+        res.json({ status: "200", HotelData: result });
+      } else {
+        res.json({ status: "200", HotelData: HotelIds });
+      }
+    }
+  } catch (err) {
+    console.error("Error in getLocationForCoordinates:", err);
+    res.status(404).json({ error: "Could not fetch the data" });
+  }
+};
+
+exports.getDishes = async (req, res, next) => {
+  try {
+    let address = req.params.locationname;
+    let hotelIds = [];
+    if (address.split(" ").length === 1) {
+      const location = await Location.findOne(
+        { Location: address },
+        { "Hotels.HotelId": 1 }
+      );
+
+      if (!location) {
+        console.log("Location not found");
+        hotelIds = [];
+      }
+
+      // Extract HotelIds from the Hotels array
+      hotelIds = location.Hotels.map((hotel) => hotel.HotelId);
+    } else {
       const loca = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
           address
@@ -174,95 +332,9 @@ exports.getLocationForCoordinates = async (req, res, next) => {
       } else {
         throw new Error("Could not fetch coordinates");
       }
-      const response = await axios.get(
-        `https://api.mapbox.com/isochrone/v1/mapbox/driving/${lng1},${lat1}?contours_meters=15000&polygons=true&denoise=0.1&access_token=${MAPBOX_ACCESS_TOKEN}`
-      );
-      if (response && response.data && response.data.features && response.data.features.length > 0) {
-        const Coordinates = response.data.features[0].geometry.coordinates;
-        const locations = await Location.aggregate([
-          {
-            $unwind: "$Hotels",
-          },
-          {
-            $match: {
-              "Hotels.Latitude": { $exists: true },
-              "Hotels.Longitude": { $exists: true },
-              Hotels: {
-                $geoWithin: {
-                  $geometry: {
-                    type: "Polygon",
-                    coordinates: [Coordinates[0]],
-                  },
-                },
-              },
-            },
-          },
-        ]).lookup({
-          from: "hotels",
-          localField: "Hotels.HotelId",
-          foreignField: "_id",
-          as: "Hotels",
-        });
-        console.log(locations[0]);
-        if(!locations)
-        {
-          res.json({status:"200",HotelData:[]});
-          return ;
-        }
-        const locs = await UpdateValue(locations);
-        let locas2 = [];
-        for (let i = 0; i < locs.length; i++) {
-          locas2.push(locs[i].Hotels);
-        }
-        HotelData = locas2;
-      }
+      hotelIds = await this.GetHotelsFromCoordinates(lat1, lng1);
     }
-
-    if (Dish) {
-      const HotelDatas = await UpdatedHotelList(HotelData, Dish);
-      const Hotels = await Hotel.find({ _id: { $in: HotelDatas } });
-      for (let i = 0; i < Hotels.length; i++) {
-        const imageUrl = cloudinary.url(Hotels[i].Image, { format: "jpg" });
-        Hotels[i].Image = imageUrl;
-      }
-      res.json({
-        status: "200",
-        HotelData: Hotels,
-        AllData: HotelData,
-        MenuItem: MenuData,
-        CategoryItem: CategoryData,
-      });
-    } else if (Category) {
-      const HotelDatas = await UpdatedHotelCategoryList(HotelData, Category);
-      const Hotels = await Hotel.find({ _id: { $in: HotelDatas } });
-      res.json({
-        status: "200",
-        HotelData: Hotels,
-        AllData: HotelData,
-        MenuItem: MenuData,
-        CategoryItem: CategoryData,
-      });
-    } else {
-      if (HotelData.length > 0) {
-        console.log(HotelData)
-        const hotelIds = HotelData.map((item) => item._id);
-        const result = await Hotel.find({ _id: { $in: hotelIds } });
-        res.json({ status: "200", HotelData: result });
-      } else {
-        res.json({ status: "200", HotelData: HotelData });
-      }
-    }
-  } catch (err) {
-    console.error("Error in getLocationForCoordinates:", err);
-    res.status(404).json({ error: "Could not fetch the data" });
-  }
-};
-
-exports.getDishes = async (req, res, next) => {
-  try {
-    const Hotels = req.body.HotelData || [];
-
-    const Data = await DifferentDishes(Hotels);
+    const Data = await DifferentDishes(hotelIds);
     if (Data) {
       res.json({
         status: "200",

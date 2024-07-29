@@ -51,9 +51,11 @@ const AddReview = asyncHandler(async (req, res) => {
 const GetOwnerReview = asyncHandler(async (req, res) => {
   const id = req.params.id;
   console.log("Id is:", id);
+  const Pagenumber=req.query.PageNumber;
+  const PageSize=req.query.PageSize;
 
   try {
-    const reviews = await Reviews.find({ HotelId: id });
+    const reviews = await Reviews.find({ HotelId: id }).skip(Pagenumber*PageSize).limit(PageSize);
 
     if (!reviews || reviews.length === 0) {
       return res.status(200).json([]); 
@@ -87,17 +89,20 @@ const GetOwnerReview = asyncHandler(async (req, res) => {
 
 const getUserReviews = asyncHandler(async (req, res) => {
   const id = req.params.id;
-  console.log("user is:", id);
+  console.log("fisnccns")
+  const Pagenumber=req.query.PageNumber;
+  const PageSize=req.query.PageSize;
+  console.log("user is:", id,Pagenumber,PageSize);
 
   try {
-    const reviews = await Reviews.find({ UserId: id });
+    const reviews = await Reviews.find({ UserId: id }).skip(Pagenumber*PageSize).limit(PageSize);
     if (!reviews || reviews.length === 0) {
       return res.status(200).json([]);
     }
 
     const totalReviews = await Promise.all(
       reviews.map(async (review) => {
-        const hotel = await Hotel.findById(review.HotelId);
+        const hotel = await Hotel.findById(review.HotelId)
         if (!hotel) return null;
         return {
           review,
