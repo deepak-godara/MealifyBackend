@@ -106,7 +106,7 @@ const ActiveOrderSchema = new Schema({
   DeliveryId:{
     type:Number,
     default:""
-  }
+  } 
 });
 
 ActiveOrderSchema.methods.Initiate = async function (Data) {

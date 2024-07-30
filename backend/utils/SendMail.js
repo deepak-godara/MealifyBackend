@@ -4,8 +4,8 @@ const sendEmail = async ({ toemail, Status, Hname, Uname, OrderId }) => {
     let transporter = nodemailer.createTransport({
         service: "Gmail",
         auth: {
-            user: 'mealifyapp@gmail.com',
-            pass: "ktet zfgq kpqu dyji" 
+            user:process.env.REACT_APP_EMAILUSER,
+            pass:process.env.REACT_APP_EMAILPASSWORD
         }
     });
 
