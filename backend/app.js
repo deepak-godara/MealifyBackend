@@ -34,7 +34,7 @@ const io = new Server(server, {
   
 mongoose
   .connect(
-    "mongodb+srv://DeepakGodara:DeepakGodara@cluster1.babvun5.mongodb.net/shop?retryWrites=true&w=majority"
+     process.env.REACT_APP_MONGODBURL
   )
   .then((result) => {
     console.log("Connected to MongoDB");

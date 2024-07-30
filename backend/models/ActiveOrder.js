@@ -142,4 +142,3 @@ ActiveOrderSchema.methods.addStatus = function (status) {
 };
 
 module.exports = mongoose.model("ActiveOrder", ActiveOrderSchema);
-     
