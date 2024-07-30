@@ -34,7 +34,7 @@ exports.getHotelData = async (req, res, next) => {
   } catch (err) {
     res.status(202).json({ status: "202", message: "Error in Getting Hotel Data" });
   }
-};
+}; 
 
 exports.addFoodCategory = async (req, res, next) => {
   try {
