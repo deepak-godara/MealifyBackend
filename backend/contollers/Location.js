@@ -22,7 +22,6 @@ const UpdateValue = async (data) => {
     }
     return arr;
   } catch (err) {
-    console.error("Error in UpdateValue:", err);
     throw err;
   }
 };
@@ -49,7 +48,6 @@ const UpdatedHotelList = async (HotelData, FoodItem) => {
     }
     return NewHotelList;
   } catch (err) {
-    console.error("Error in UpdatedHotelList:", err);
     throw err;
   }
 };
@@ -68,7 +66,6 @@ const UpdatedHotelCategoryList = async (HotelData, Category) => {
     }
     return NewHotelList;
   } catch (err) {
-    console.error("Error in UpdatedHotelCategoryList:", err);
     throw err;
   }
 };
@@ -77,7 +74,6 @@ const DifferentDishes = async (HotelData) => {
   try {
     const MenuItem = new Set();
     const CategoryItem = new Set();
-    console.log(HotelData);
     let HotelList = [];
     HotelList = await Hotel.find(
       { _id: { $in: HotelData } },
@@ -85,7 +81,6 @@ const DifferentDishes = async (HotelData) => {
     );
 
     const MenuItems = await Menu.find({ Id: { $in: HotelData } });
-    console.log(MenuItems);
     for (let i = 0; i < MenuItems.length; i++) {
       MenuItems[i].Menu.forEach((menu) => {
         CategoryItem.add(menu.Name);
@@ -94,15 +89,12 @@ const DifferentDishes = async (HotelData) => {
         });
       });
     }
-    console.log(MenuItem);
-    console.log(CategoryItem);
     return {
       MenuList: Array.from(MenuItem),
       Category: Array.from(CategoryItem),
       HotelList: HotelList,
     };
   } catch (err) {
-    console.error("Error in DifferentDishes:", err);
     throw err;
   }
 };
@@ -112,7 +104,6 @@ exports.getAllLocation = async (req, res, next) => {
     const locations = await Location.find();
     res.json({ status: "200", locations: locations });
   } catch (err) {
-    console.error("Error in getAllLocation:", err);
     res.json({ status: "202", message: "Failed to Get the locations" });
   }
 };
@@ -126,7 +117,6 @@ exports.getHotelForLocation = async (req, res, next) => {
       .exec();
     res.json({ status: "200", hotels: location.Hotels });
   } catch (err) {
-    console.error("Error in getHotelForLocation:", err);
     res.json({ status: "202", message: "Failed to get hotels for location" });
   }
 };
@@ -137,9 +127,17 @@ exports.getHotelForLocationName = async (req, res, next) => {
     const PageNumber = req.query.PageNumber;
     const PageSize = req.query.PageSize;
     const location = await Location.findOne({ Location: name })
-      .populate("Hotels.HotelId")
-      .lean()
-      .exec();
+    .populate("Hotels.HotelId")
+    .lean()
+    .skip(PageSize * PageNumber)
+    .limit(PageSize)
+    .exec();
+    // console.log(Location)
+    if(location===null||location.Hotels===null)
+    {
+      res.json({status:"200",HotelData:[]});
+      return ;
+    }
     const Hotels = location.Hotels.map((item) => ({
       _id: item.HotelId._id.toString(),
       Name: item.HotelId.Name,
@@ -150,9 +148,10 @@ exports.getHotelForLocationName = async (req, res, next) => {
       Id: item.HotelId.Id.toString(),
       Image: item.HotelId.Image,
     }));
+    // conosle.log(Hotels)
     res.json({ status: "200", HotelData: Hotels });
   } catch (err) {
-    console.error("Error in getHotelForLocationName:", err);
+    // console.log(err)
     res.json({
       status: "202",
       message: "Failed to get hotels for location name",
@@ -244,7 +243,6 @@ exports.getLocationForCoordinates = async (req, res, next) => {
     const hotelIds = await this.GetHotelsFromCoordinates(lat1, lng1);
 
     if (Dish) {
-      console.log("hii");
       const menus = await Menu.distinct("Id", {
         "Menu.items": {
           $elemMatch: {
@@ -254,7 +252,6 @@ exports.getLocationForCoordinates = async (req, res, next) => {
       });
       const hotelIdsSet = new Set(hotelIds.map((id) => id.toString()));
 
-      // Filter common IDs using the Set
       const commonHotelIds = menus.filter((id) =>
         hotelIdsSet.has(id.toString())
       );
@@ -278,7 +275,6 @@ exports.getLocationForCoordinates = async (req, res, next) => {
       const commonHotelIds = Categorys.filter((id) =>
         hotelIdsSet.has(id.toString())
       );
-      console.log(commonHotelIds);
       const Hotels = await Hotel.find({ _id: { $in: commonHotelIds } });
       res.json({
         status: "200",
@@ -295,7 +291,6 @@ exports.getLocationForCoordinates = async (req, res, next) => {
       }
     }
   } catch (err) {
-    console.error("Error in getLocationForCoordinates:", err);
     res.status(404).json({ error: "Could not fetch the data" });
   }
 };
@@ -311,7 +306,6 @@ exports.getDishes = async (req, res, next) => {
       );
 
       if (!location) {
-        console.log("Location not found");
         hotelIds = [];
       }
 

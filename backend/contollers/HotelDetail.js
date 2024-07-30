@@ -19,7 +19,6 @@ exports.postHotelDish = async (req, res, next) => {
     await menu.addDish(food);
     res.json({ status: "200", message: "Dish added successfully", dish: food });
   } catch (err) {
-    console.error("Error adding dish:", err);
     res.status(202).json({ status: "202", message: "Error in adding Dish" });
   }
 };
@@ -33,7 +32,6 @@ exports.getHotelData = async (req, res, next) => {
 
     res.json({ status: "200", hotel: hotel, Menu: menu });
   } catch (err) {
-    console.error("Error fetching hotel data:", err);
     res.status(202).json({ status: "202", message: "Error in Getting Hotel Data" });
   }
 };
@@ -48,7 +46,6 @@ exports.addFoodCategory = async (req, res, next) => {
 
     res.json({ status: "200", message: "Category added" });
   } catch (err) {
-    console.error("Error adding food category:", err);
     res.status(202).json({ status: "202", message: "Error adding Category" });
   }
 };
@@ -66,7 +63,6 @@ exports.deleteFoodItem = async (req, res, next) => {
 
     res.json({ status: "200", message: "Delete item successfully" });
   } catch (err) {
-    console.error("Error deleting food item:", err);
     res.status(202).json({ status: "202", message: "Error in deleting the food item" });
   }
 };
@@ -74,11 +70,9 @@ exports.deleteFoodItem = async (req, res, next) => {
 exports.getMenu = async (req, res, next) => {
   try {
     const hotelid = req.params.hotelid;
-
     const menu = await Menu.findOne({ Id: hotelid });
     res.json({ status: "200", Menu: menu });
   } catch (err) {
-    console.error("Error fetching menu:", err);
     res.status(202).json({ status: "202", message: "Error in Getting Menu" });
   }
 };
@@ -94,7 +88,6 @@ exports.AddMenuCategory = async (req, res, next) => {
 
     res.json({ status: "200", message: "Category added" });
   } catch (err) {
-    console.error("Error adding menu category:", err);
     res.status(202).json({ status: "202", message: "Error adding Category" });
   }
 };

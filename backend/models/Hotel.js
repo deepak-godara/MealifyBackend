@@ -50,6 +50,7 @@ const HotelSchema = new Schema({
 });
 
 HotelSchema.methods.addCategory = async function (category) {
+  try{
   const Categories = [...this.Category];
   const index = this.Category.findIndex((item) => item === category);
   if (index === -1) {
@@ -57,6 +58,10 @@ HotelSchema.methods.addCategory = async function (category) {
   }
   this.Category = Categories;
   return this.save();
+}
+catch(err){
+  throw new Error('Error in Adding Category : ' + err.message);
+}
 };
 
 HotelSchema.methods.addReview = async function (Rating) {

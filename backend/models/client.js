@@ -85,58 +85,102 @@ const ClientSchema = new Schema({
 //   this.save();
 // };
 ClientSchema.methods.UpdateProfile = async function (Data) {
-  console.log(Data);
-  this.DOB = Data.DOB;
-  this.Gender = Data.Gender;
-  this.PhoneNo = Data.PhoneNo;
-  this.Gmail = Data.Gmail;
-  this.UserName = Data.UserName;
-  return this.save();
+  try {
+    console.log(Data);
+    this.DOB = Data.DOB;
+    this.Gender = Data.Gender;
+    this.PhoneNo = Data.PhoneNo;
+    this.Gmail = Data.Gmail;
+    this.UserName = Data.UserName;
+    return await this.save();
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    throw error;
+  }
 };
-ClientSchema.methods.Addaddress = async function (Data) {
-  let address;
-  if (this.Address.length === 0) {
-    address = [];
-    address.push();
-  } else address = this.Address;
-  address.push({
-    latitude: Data.Coordinates.lat,
-    longitude: Data.Coordinates.lng,
-    Address: Data.Address,
-    Type: Data.Type,
-    AddressLine1: Data.AddLine1,
-    AddressLine2: Data.AddLine2,
-  });
-  this.Address = address;
-  return this.save();
+
+ClientSchema.methods.AddAddress = async function (Data) {
+  try {
+    let address = this.Address.length === 0 ? [] : this.Address;
+    address.push({
+      latitude: Data.Coordinates.lat,
+      longitude: Data.Coordinates.lng,
+      Address: Data.Address,
+      Type: Data.Type,
+      AddressLine1: Data.AddLine1,
+      AddressLine2: Data.AddLine2,
+    });
+    this.Address = address;
+    return await this.save();
+  } catch (error) {
+    console.error("Error adding address:", error);
+    throw error;
+  }
 };
+
 ClientSchema.methods.AddFaceImage = async function (id) {
-  this.ForeGroundImage = id;
-  return this.save();
+  try {
+    this.ForeGroundImage = id;
+    return await this.save();
+  } catch (error) {
+    console.error("Error adding face image:", error);
+    throw error;
+  }
 };
+
 ClientSchema.methods.AddBackImage = async function (id) {
-  this.BackGroundImage = id;
-  return this.save();
+  try {
+    this.BackGroundImage = id;
+    return await this.save();
+  } catch (error) {
+    console.error("Error adding back image:", error);
+    throw error;
+  }
 };
+
 ClientSchema.methods.UpdateDefaultAddress = async function (Aid) {
-  let arr = this.Address.filter((key, index) => key.Aid == Aid);
-  console.log(arr)
-  this.CurrentActiveAddress = arr[0];
-  return this.save();
+  try {
+    let arr = this.Address.filter((key) => key.Aid == Aid);
+    console.log(arr);
+    this.CurrentActiveAddress = arr[0];
+    return await this.save();
+  } catch (error) {
+    console.error("Error updating default address:", error);
+    throw error;
+  }
 };
+
 ClientSchema.methods.EditProfile = async function (Data) {
-  if (Data.Gender) this.Gender = Data.Gender;
-  if (Data.DOB) this.DOB = Data.DOB;
-  if (Data.PhoneNo) this.PhoneNo = Data.PhoneNo;
-  if (Data.UserName) this.UserName = Data.UserName;
-  return this.save();
+  try {
+    if (Data.Gender) this.Gender = Data.Gender;
+    if (Data.DOB) this.DOB = Data.DOB;
+    if (Data.PhoneNo) this.PhoneNo = Data.PhoneNo;
+    if (Data.UserName) this.UserName = Data.UserName;
+    return await this.save();
+  } catch (error) {
+    console.error("Error editing profile:", error);
+    throw error;
+  }
 };
+
 ClientSchema.methods.AddOrder = async function (OrderId) {
-  this.Orders.unshift({ OrderNumber: OrderId });
-  return this.save();
+  try {
+    this.Orders.unshift({ OrderNumber: OrderId });
+    return await this.save();
+  } catch (error) {
+    console.error("Error adding order:", error);
+    throw error;
+  }
 };
-ClientSchema.methods.AddReviews=async function(){
-  this.ReviewCount+=1;
-  return this.save();
-}
+
+ClientSchema.methods.AddReviews = async function () {
+  try {
+    this.ReviewCount += 1;
+    return await this.save();
+  } catch (error) {
+    console.error("Error adding review:", error);
+    throw error;
+  }
+};
+
 module.exports = mongoose.model("client", ClientSchema);

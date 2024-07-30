@@ -114,26 +114,38 @@ CartSchema.methods.updateCart = async function (Data) {
   }
 };
 CartSchema.methods.DeleteItem = async function (Data) {
-  let ItemtoDelete;
-  const updatedCart = await this.items.filter((item) => {
-    if (item.FoodName === Data.FoodName) ItemtoDelete = item;
-    return item.FoodName !== Data.FoodName;
-  });
-  this.items = updatedCart;
-  this.SubTotal = this.SubTotal - +ItemtoDelete.Price * ItemtoDelete.Quantity;
-  this.GST = (this.SubTotal * 3) / 100;
-  this.Total = this.SubTotal + this.GST + this.Delivery;
-  this.save();
+  try {
+    let ItemtoDelete;
+    const updatedCart = await this.items.filter((item) => {
+      if (item.FoodName === Data.FoodName) ItemtoDelete = item;
+      return item.FoodName !== Data.FoodName;
+    });
+    this.items = updatedCart;
+    this.SubTotal = this.SubTotal - +ItemtoDelete.Price * ItemtoDelete.Quantity;
+    this.GST = (this.SubTotal * 3) / 100;
+    this.Total = this.SubTotal + this.GST + this.Delivery;
+    await this.save();
+  } catch (error) {
+    console.error("Error deleting item:", error);
+    throw error; // Re-throw the error after logging it
+  }
 };
+
 CartSchema.methods.DeleteCart = async function () {
-  this.Items = [];
-  this.Quantity = 0;
-  this.SubTotal = 0;
-  this.GST = 0;
-  this.Delivery = 0;
-  this.Total = 0;
-  this.HotelName = null;
-  this.HotelId = null;
-  return this.save();
+  try {
+    this.Items = [];
+    this.Quantity = 0;
+    this.SubTotal = 0;
+    this.GST = 0;
+    this.Delivery = 0;
+    this.Total = 0;
+    this.HotelName = null;
+    this.HotelId = null;
+    await this.save();
+  } catch (error) {
+    console.error("Error deleting cart:", error);
+    throw error; // Re-throw the error after logging it
+  }
 };
+
 module.exports = Mongoose.model("Cart", CartSchema);

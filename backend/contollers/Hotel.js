@@ -28,7 +28,6 @@ exports.getHotel = async (req, res, next) => {
     await hotel.save();
     res.status(201).json({ status: "success", message: "Hotel added" });
   } catch (err) {
-    console.error("Error adding hotel:", err);
     res.status(500).json({ message: "Error adding hotel" });
   }
 };
@@ -43,7 +42,6 @@ exports.postHotel = async (req, res, next) => {
       message: "Content delivered successfully",
     });
   } catch (err) {
-    console.error("Error fetching hotel data:", err);
     res.status(500).json({ message: "Error in fetching the data" });
   }
 };
@@ -55,7 +53,6 @@ exports.getNewOrders = async (req, res, next) => {
 
     res.json({ status: "200", Orders: orders });
   } catch (err) {
-    console.error("Error fetching new orders:", err);
     res
       .status(500)
       .json({ status: "201", message: "Error fetching new orders" });
@@ -67,7 +64,6 @@ exports.getActiveOrders = async (req, res, next) => {
     const orders = await ActiveOrder.find({ HotelId: hotelid }).exec();
     res.status(200).json({ Orders: orders });
   } catch (err) {
-    console.error("Error fetching new orders:", err);
     res
       .status(500)
       .json({ status: "201", message: "Error fetching new orders" });
@@ -75,13 +71,10 @@ exports.getActiveOrders = async (req, res, next) => {
 };
 exports.getDistances = async (req, res, next) => {
   try {
-    console.log("hii");
     const hotelid = req.params.hotelid;
     const Latitude = req.query.Latitude;
     const Longitude = req.query.Longitude;
-    console.log(Latitude + Longitude);
     const hotel = await addHotel.findById(hotelid);
-    console.log(hotel);
     if (hotel) {
       const Dist = geolib.getDistance(
         { latitude: Latitude, longitude: Longitude },
@@ -90,7 +83,6 @@ exports.getDistances = async (req, res, next) => {
           longitude: hotel.Coordinates.Longitude,
         }
       );
-      console.log(Dist + " dist");
       res.status(200).json({ message: "got the distance", Distance: Dist });
     } else res.status(401).json({ message: "Cannot found hotel" });
   } catch (err) {

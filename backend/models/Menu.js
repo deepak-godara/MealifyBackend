@@ -34,34 +34,39 @@ const MenuSchemas = new Schema({
   Menu: [MenuSchema],
 });
 MenuSchemas.methods.addDish = async function (dish) {
-  console.log("sdvnjsvsvns");
-  const check = await this.Menu.findIndex((item) => {
-    return item.Name === dish.foodcategory;
-  });
-  const MenuData = [...this.Menu];
-  if (check !== -1) {
-    MenuData[check].items.push({
-      Name: dish.Name,
-      Price: dish.Price,
-      FoodType: dish.Foodtype,
-      Description: dish.Description,
+  try {
+    const check = await this.Menu.findIndex((item) => {
+      return item.Name === dish.foodcategory;
     });
-  } else {
-    const NewFoodCategory = [];
-    NewFoodCategory.push({
-      Name: dish.Name,
-      Price: dish.price,
-      FoodType: dish.Foodtype,
-      Description: dish.fDscription,
-    });
+    const MenuData = [...this.Menu];
+    if (check !== -1) {
+      MenuData[check].items.push({
+        Name: dish.Name,
+        Price: dish.Price,
+        FoodType: dish.Foodtype,
+        Description: dish.Description,
+      });
+    } else {
+      const NewFoodCategory = [];
+      NewFoodCategory.push({
+        Name: dish.Name,
+        Price: dish.price,
+        FoodType: dish.Foodtype,
+        Description: dish.fDscription,
+      });
 
-    MenuData.push({
-      Name: dish.foodcategory,
-      items: NewFoodCategory,
-    });
+      MenuData.push({
+        Name: dish.foodcategory,
+        items: NewFoodCategory,
+      });
+    }
+
+    this.Menu = MenuData;
+    return await this.save();
+  } catch (error) {
+    console.error("Error adding dish:", error);
+    throw error; // Re-throw the error after logging it
   }
-
-  this.Menu = MenuData;
-  return this.save();
 };
+
 module.exports = Mongoose.model("Menu", MenuSchemas);
