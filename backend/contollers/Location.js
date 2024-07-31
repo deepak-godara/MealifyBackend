@@ -7,7 +7,9 @@ const API_KEY = "AIzaSyCu1pHsemJ5XMhOE36gG9e77EE1VTb1QUM";
 const MAPBOX_API_URL = "https://api.mapbox.com/boundaries/v4/mapbox/places";
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1IjoiZGVlcGFrZ29kYXJhIiwiYSI6ImNsbGh0ZWhldDAycjEzcG5xbmZ2Y3NtcTgifQ.YH0ASk4DJRM5kuTK2FCYxQ";
-
+const GOOGLEKEY=process.env.GOOGLE_MAP_API_KEY;
+const mapboxUrl = process.env.REACT_APP_MAPBOX_API_URL;
+const mapboxAccessToken = process.env.MAPBOX_ACCESS_TOKENS;
 const UpdateValue = async (data) => {
   try {
     let arr = [];
@@ -162,7 +164,7 @@ exports.getHotelForLocationName = async (req, res, next) => {
 exports.GetHotelsFromCoordinates = async (lat1, lng1) => {
   try{
   const response = await axios.get(
-    `https://api.mapbox.com/isochrone/v1/mapbox/driving/${lng1},${lat1}?contours_meters=15000&polygons=true&denoise=0.1&access_token=${MAPBOX_ACCESS_TOKEN}`
+    `${mapboxUrl}/${lng1},${lat1}?contours_meters=15000&polygons=true&denoise=0.1&access_token=${mapboxAccessToken}`
   );
   if (
     response &&
@@ -215,6 +217,7 @@ catch(err){
 }
 };
 exports.getLocationForCoordinates = async (req, res, next) => {
+ 
   try {
     const address = req.params.locationname;
     if (address.split(" ").length === 1) {
@@ -225,10 +228,11 @@ exports.getLocationForCoordinates = async (req, res, next) => {
     const Category = req.query.Category;
     const PageNumber = req.query.PageNumber;
     const PageSize = req.query.PageSize;
+    const GoogleKey=process.env.GOOGLE_MAP_API_KEY;
     const loca = await axios.get(
       `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
         address
-      )}&key=${API_KEY}`
+      )}&key=${GOOGLEKEY}`
     );
     const { status, results } = loca.data;
     let lat1, lng1;
@@ -315,7 +319,7 @@ exports.getDishes = async (req, res, next) => {
       const loca = await axios.get(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
           address
-        )}&key=${API_KEY}`
+        )}&key=${GOOGLEKEY}`
       );
       const { status, results } = loca.data;
       let lat1, lng1;
@@ -340,7 +344,6 @@ exports.getDishes = async (req, res, next) => {
       res.json({ status: "203", Message: "Cannot load the search Data" });
     }
   } catch (err) {
-    console.error("Error in getDishes:", err);
     res.json({ status: "203", Message: "Error in fetching the dishes" });
   }
 };
