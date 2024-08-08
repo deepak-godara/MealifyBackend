@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const Hotel = require("../models/Hotel");
 const Client = require("../models/client");
-const ActiveOrder = require('../models/ActiveOrder')
+const ActiveOrder = require("../models/ActiveOrder");
 const mongoose = require("mongoose");
 const Reviews = require("../models/Review");
 
@@ -47,18 +47,19 @@ const AddReview = asyncHandler(async (req, res) => {
   }
 });
 
-
 const GetOwnerReview = asyncHandler(async (req, res) => {
   const id = req.params.id;
   console.log("Id is:", id);
-  const Pagenumber=req.query.PageNumber;
-  const PageSize=req.query.PageSize;
+  const Pagenumber = req.query.PageNumber;
+  const PageSize = req.query.PageSize;
 
   try {
-    const reviews = await Reviews.find({ HotelId: id }).skip(Pagenumber*PageSize).limit(PageSize);
+    const reviews = await Reviews.find({ HotelId: id })
+      .skip(Pagenumber * PageSize)
+      .limit(PageSize);
 
     if (!reviews || reviews.length === 0) {
-      return res.status(200).json([]); 
+      return res.status(200).json([]);
     }
 
     const reviewsWithUser = await Promise.all(
@@ -77,7 +78,7 @@ const GetOwnerReview = asyncHandler(async (req, res) => {
       })
     );
 
-    const filteredReviews = reviewsWithUser.filter(item => item !== null);
+    const filteredReviews = reviewsWithUser.filter((item) => item !== null);
     // console.log("Filtered reviews:", filteredReviews);
 
     res.status(200).json(filteredReviews);
@@ -89,20 +90,22 @@ const GetOwnerReview = asyncHandler(async (req, res) => {
 
 const getUserReviews = asyncHandler(async (req, res) => {
   const id = req.params.id;
-  console.log("fisnccns")
-  const Pagenumber=req.query.PageNumber;
-  const PageSize=req.query.PageSize;
-  console.log("user is:", id,Pagenumber,PageSize);
+  console.log("fisnccns");
+  const Pagenumber = req.query.PageNumber;
+  const PageSize = req.query.PageSize;
+  console.log("user is:", id, Pagenumber, PageSize);
 
   try {
-    const reviews = await Reviews.find({ UserId: id }).skip(Pagenumber*PageSize).limit(PageSize);
+    const reviews = await Reviews.find({ UserId: id })
+      .skip(Pagenumber * PageSize)
+      .limit(PageSize);
     if (!reviews || reviews.length === 0) {
       return res.status(200).json([]);
     }
 
     const totalReviews = await Promise.all(
       reviews.map(async (review) => {
-        const hotel = await Hotel.findById(review.HotelId)
+        const hotel = await Hotel.findById(review.HotelId);
         if (!hotel) return null;
         return {
           review,
@@ -125,4 +128,3 @@ const getUserReviews = asyncHandler(async (req, res) => {
 });
 
 module.exports = { AddReview, GetOwnerReview, getUserReviews };
- 

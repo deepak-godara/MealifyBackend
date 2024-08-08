@@ -17,6 +17,7 @@ exports.postLogin = async (req, res, next) => {
       ForeGroundImage: null,
       BackGroundImage: null,
       Address: [],
+      ReviewCount:0,
       CurrentActiveAddress:null
     });
 
@@ -35,6 +36,7 @@ exports.postLogin = async (req, res, next) => {
     await newCart.save();
     res.json({ status: "200", message: "Registered successfully" });
   } catch (err) {
+    console.log(err)
     res.json({
       status: "202",
       message: "Error in getting you registered. Please try again in a few minutes.",

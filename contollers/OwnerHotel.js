@@ -57,6 +57,7 @@ exports.OwnerAddHotel = async (req, res, next) => {
       Image: image.url,
       Category: ["Pizzas", "North Indian"],
       Id: OwnerId,
+      ReviewCount:0
     });
 
     // Save hotel document
