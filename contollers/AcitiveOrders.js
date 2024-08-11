@@ -1,21 +1,39 @@
 const asyncHandler = require("express-async-handler");
 const  Activeorder = require("../models/ActiveOrder");
 
-const getActiveOrders = asyncHandler(async(req, res) =>{
-
+const getOwnerActiveOrders = asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    console.log(id);
     try {
-        const  Active =  await  Activeorder.find();
-        if(!Active){
-            return   res.status(404).json({error : "no active orders  found"});
+        const Active = await Activeorder.find({ HotelId: id });
+        if (Active.length === 0) {
+            return res.status(404).json({ error: "No active orders found" });
         }
 
         res.json(Active);
         
     } catch (error) {
-         return res.status(404).json({error: ' faild to find active order : '})
+        return res.status(500).json({ error: 'Failed to find active orders: ' + error.message });
     }
+});
 
-})
+const getUserActiveOrders = asyncHandler(async (req, res) => {
+    const id = req.params.id;
+    console.log(id);
+    try {
+        const Active = await Activeorder.find({ UserId: id });
+        if (Active.length === 0) {
+            return res.status(404).json({ error: "No active orders found" });
+        }
+
+        res.json(Active);
+        
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to find active orders: ' + error.message });
+    }
+});
+
+
 
 const saveOrderStatus = asyncHandler(async (req, res) => {
     const { orderId, status } = req.body;
@@ -37,4 +55,4 @@ const saveOrderStatus = asyncHandler(async (req, res) => {
 });
 
 
-module.exports = {getActiveOrders , saveOrderStatus }
+module.exports = {getOwnerActiveOrders, getUserActiveOrders , saveOrderStatus }
