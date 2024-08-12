@@ -55,7 +55,7 @@ app.use((req, res, next) => {
 });
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log("User connected:", socket.id);  
   SocketFunction(socket, io); 
   JoinFunction(socket,io);
   AddOrder(socket,io);
@@ -72,4 +72,3 @@ app.use(clientRoute);
 app.use(ownerRoute);
 app.use(CartRoute);
 module.exports={io};
-       

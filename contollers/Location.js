@@ -48,7 +48,7 @@ const UpdatedHotelList = async (HotelData, FoodItem) => {
         }
       }
     }
-    return NewHotelList;
+    return NewHotelList;    
   } catch (err) {
     throw err;
   }
