@@ -160,62 +160,188 @@ exports.getHotelForLocationName = async (req, res, next) => {
     });
   }
 };
-
 exports.GetHotelsFromCoordinates = async (lat1, lng1) => {
-  try{
-  const response = await axios.get(
-    `${mapboxUrl}/${lng1},${lat1}?contours_meters=15000&polygons=true&denoise=0.1&access_token=${mapboxAccessToken}`
-  );
-  if (
-    response &&
-    response.data &&
-    response.data.features &&
-    response.data.features.length > 0
-  ) {
-    const Coordinates = response.data.features[0].geometry.coordinates;
-    const locations = await Location.aggregate([
-      {
-        $unwind: "$Hotels",
-      },
-      {
-        $match: {
-          "Hotels.Latitude": { $exists: true },
-          "Hotels.Longitude": { $exists: true },
-          Hotels: {
-            $geoWithin: {
-              $geometry: {
-                type: "Polygon",
-                coordinates: [Coordinates[0]],
+  try {
+    // Define the radius in meters
+    const radius = 10000; // 10 km
+
+    // Fetch the polygon coordinates from Mapbox
+    const response = await axios.get(
+      `${mapboxUrl}/${lng1},${lat1}?contours_meters=${radius}&polygons=true&denoise=0.1&access_token=${mapboxAccessToken}`
+    );
+
+    if (
+      response &&
+      response.data &&
+      response.data.features &&
+      response.data.features.length > 0
+    ) {
+      // Mapbox returns coordinates as an array of arrays
+      const coordinates = response.data.features[0].geometry.coordinates[0];
+
+      const polygonCoordinates = coordinates.map(coord => [coord[0], coord[1]]);
+
+      // Perform the geospatial query
+      const locations = await Location.aggregate([
+        {
+          $match: {
+            'Hotels.Location': {
+              $geoWithin: {
+                $geometry: {
+                  type: "Polygon",
+                  coordinates: [polygonCoordinates],
+                },
               },
             },
           },
         },
-      },
-    ]).lookup({
-      from: "hotels",
-      localField: "Hotels.HotelId",
-      foreignField: "_id",
-      as: "Hotels",
-    });
-    if (!locations) {
-      res.json({ status: "200", HotelData: [] });
-      return;
+        {
+          $lookup: {
+            from: "hotels",
+            localField: "Hotels.HotelId",
+            foreignField: "_id",
+            as: "HotelDetails",
+          },
+        },
+        {
+          $unwind: "$HotelDetails",
+        },
+        {
+          $project: {
+            _id: "$HotelDetails._id",
+            Name: "$HotelDetails.Name",
+            City: "$HotelDetails.City",
+            Rating: "$HotelDetails.Rating",
+            Coordinates: "$HotelDetails.Coordinates",
+            Image: "$HotelDetails.Image",
+            Category: "$HotelDetails.Category",
+          },
+        },
+      ]);
+      const hotelIds = locations.map((item) => item._id);
+      return hotelIds;
+    } else {
+      return [];
     }
-    const locs = await UpdateValue(locations);
-    let locas2 = [];
-    for (let i = 0; i < locs.length; i++) {
-      locas2.push(locs[i].Hotels);
-    }
-    HotelData = locas2;
+  } catch (err) {
+    console.log(err);
+    throw new Error("Error in Locating hotels");
   }
-  // console.log(HotelData)
-  const hotelIds = HotelData.map((item) => item._id);
-  return hotelIds;
-}
-catch(err){
-   throw new Error("Error in Locating hotels")
-}
 };
+
+// exports.GetHotelsFromCoordinates = async (lat1, lng1) => {
+//   try {
+//     const response = await axios.get(
+//       `${mapboxUrl}/${lng1},${lat1}?contours_meters=15000&polygons=true&denoise=0.1&access_token=${mapboxAccessToken}`
+//     );
+//     if (
+//       response &&
+//       response.data &&
+//       response.data.features &&
+//       response.data.features.length > 0
+//     ) {
+//       const Coordinates = response.data.features[0].geometry.coordinates;
+//       console.log(Coordinates)
+//       const locations = await Location.aggregate([
+//         {
+//           $unwind: "$Hotels",
+//         },
+//         {
+//           $match: {
+//             "Hotels.Location": { $exists: true },
+//             Hotels: {
+//               $geoWithin: {
+//                 $geometry: {
+//                   type: "Polygon",
+//                   coordinates: [Coordinates[0]],
+//                 },
+//               },
+//             },
+//           },
+//         },
+//       ]).lookup({
+//         from: "hotels",
+//         localField: "Hotels.HotelId",
+//         foreignField: "_id",
+//         as: "Hotels",
+//       });
+//       if (!locations) {
+//         res.json({ status: "200", HotelData: [] });
+//         return;
+//       }
+//       const locs = await UpdateValue(locations);
+//       let locas2 = [];
+//       for (let i = 0; i < locs.length; i++) {
+//         locas2.push(locs[i].Hotels);
+//       }
+//       HotelData = locas2;
+//     }
+//     console.log(HotelData)
+//     const hotelIds = HotelData.map((item) => item._id);
+//     return hotelIds;
+//   } catch (err) {
+//     console.log(err);
+//     throw new Error("Error in Locating hotels");
+//   }
+// };
+
+// exports.GetHotelsFromCoordinates = async (lat1, lng1) => {
+//   try{
+//   const response = await axios.get(
+//     `${mapboxUrl}/${lng1},${lat1}?contours_meters=15000&polygons=true&denoise=0.1&access_token=${mapboxAccessToken}`
+//   );
+//   if (
+//     response &&
+//     response.data &&
+//     response.data.features &&
+//     response.data.features.length > 0
+//   ) {
+//     const Coordinates = response.data.features[0].geometry.coordinates;
+//     const locations = await Location.aggregate([
+//       {
+//         $unwind: "$Hotels",
+//       },
+//       {
+//         $match: {
+//           "Hotels.Latitude": { $exists: true },
+//           "Hotels.Longitude": { $exists: true },
+//           Hotels: {
+//             $geoWithin: {
+//               $geometry: {
+//                 type: "Polygon",
+//                 coordinates: [Coordinates[0]],
+//               },
+//             },
+//           },
+//         },
+//       },
+//     ]).lookup({
+//       from: "hotels",
+//       localField: "Hotels.HotelId",
+//       foreignField: "_id",
+//       as: "Hotels",
+//     });
+//     if (!locations) {
+//       res.json({ status: "200", HotelData: [] });
+//       return;
+//     }
+//     const locs = await UpdateValue(locations);
+//     let locas2 = [];
+//     for (let i = 0; i < locs.length; i++) {
+//       locas2.push(locs[i].Hotels);
+//     }
+//     HotelData = locas2;
+//   }
+//   // console.log(HotelData)
+//   const hotelIds = HotelData.map((item) => item._id);
+//   console.log(hotelIds+ "fgfhg")
+//   return hotelIds;
+// }
+// catch(err){
+//   console.log(err);
+//    throw new Error("Error in Locating hotels")
+// }
+// };
 exports.getLocationForCoordinates = async (req, res, next) => {
  
   try {
@@ -295,6 +421,7 @@ exports.getLocationForCoordinates = async (req, res, next) => {
       }
     }
   } catch (err) {
+    console.log(err);
     res.status(404).json({ error: "Could not fetch the data" });
   }
 };

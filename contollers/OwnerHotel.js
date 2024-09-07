@@ -36,6 +36,7 @@ exports.OwnerAddHotel = async (req, res, next) => {
     const OwnerId = req.params.id;
 
     console.log("AddHotel " + OwnerId);
+
     // Upload image to Cloudinary
     const image = await cloudinary.uploader.upload(Data.Image, {
       upload_preset: "Mealify_Hotel_Images",
@@ -57,7 +58,7 @@ exports.OwnerAddHotel = async (req, res, next) => {
       Image: image.url,
       Category: ["Pizzas", "North Indian"],
       Id: OwnerId,
-      ReviewCount:0
+      ReviewCount: 0
     });
 
     // Save hotel document
@@ -70,31 +71,40 @@ exports.OwnerAddHotel = async (req, res, next) => {
       Menu: [],
     });
     await menu.save();
+
+    // Find or create location
     let locations = await Location.findOne({ Location: Data.City });
+
     if (!locations) {
       locations = new Location({
         Location: Data.City,
         Hotels: [
           {
             HotelId: hotelId,
-            Longitude: Data.Coordinates.lng,
-            Latitude: Data.Coordinates.lat,
-          },
+            Location: {
+              type: 'Point',
+              coordinates: [Data.Coordinates.lng, Data.Coordinates.lat] // GeoJSON format
+            }
+          }
         ],
       });
     } else {
       locations.Hotels.push({
         HotelId: hotelId,
-        Longitude: Data.Coordinates.lng,
-        Latitude: Data.Coordinates.lat,
+        Location: {
+          type: 'Point',
+          coordinates: [Data.Coordinates.lng, Data.Coordinates.lat] // GeoJSON format
+        }
       });
     }
     await locations.save();
 
     // Update Owner document with HotelId
     const owner = await Owner.findOne({ _id: OwnerId });
-    owner.HotelId = hotelId;
-    await owner.save();
+    if (owner) {
+      owner.HotelId = hotelId;
+      await owner.save();
+    }
 
     res.json({ status: "200", message: "Hotel added successfully" });
   } catch (err) {

@@ -5,13 +5,16 @@ const { cloudinary } = require("../utils/cloudniary");
 
 exports.AddAddress = async (req, res, next) => {
   try {
+    console.log("yes")
     const id = req.params.clientid;
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).send({ message: 'Invalid client  ID' });
     }
     const Address = req.body.Address;
     const client = await Client.findOne({ _id: id });
-    await client.Addaddress(Address);
+    if(client)
+    {
+    await client.AddAddress(Address);
     console.log(client.Address)
     if(client.Address.length==1)
     {
@@ -20,6 +23,11 @@ exports.AddAddress = async (req, res, next) => {
     await client.save();
     }
     res.status(200).json({ message: "Address added successfully", Address:client});
+  }
+  else
+  {
+    res.status(202).json({ message: "User not found" });
+  }
   } catch (err) {
     console.error("Error in adding address:", err);
     res.status(202).json({ message: "Error in adding address" });
